@@ -109,9 +109,7 @@ function showHelp() {
 `));
 }
 
-// Point d'entrée
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main().catch(console.error);
-}
+// Point d'entrée - Exécuter immédiatement
+main().catch(console.error);
 
 export { FirebaseAppBuilderAgent };
