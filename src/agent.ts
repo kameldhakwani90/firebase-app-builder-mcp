@@ -1,5 +1,7 @@
 import chalk from 'chalk';
 import inquirer from 'inquirer';
+import path from 'path';
+import os from 'os';
 import { ProjectManager } from './memory/projects.js';
 import { GitCloner } from './tools/cloner.js';
 import { IntelligentAnalyzer } from './tools/intelligent-analyzer.js';
@@ -522,8 +524,8 @@ Pour le reprendre plus tard : \`firebase-app-builder continue ${project.name}\`
     
     // Projets récents
     try {
-      const projectsPath = require('path').join(require('os').homedir(), 'firebase-migrations', 'projects.json');
-      const fs = require('fs-extra');
+      const projectsPath = path.join(os.homedir(), 'firebase-migrations', 'projects.json');
+      const fs = await import('fs-extra');
       
       if (await fs.pathExists(projectsPath)) {
         const projects = await fs.readJSON(projectsPath);

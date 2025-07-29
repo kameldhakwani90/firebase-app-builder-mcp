@@ -1,4 +1,6 @@
 import { logger } from './logger.js';
+import path from 'path';
+import os from 'os';
 
 export interface SafetyConfig {
   maxRetries: number;
@@ -35,8 +37,8 @@ export class SafetyManager {
       ...config
     };
 
-    this.stateFilePath = require('path').join(
-      require('os').homedir(),
+    this.stateFilePath = path.join(
+      os.homedir(),
       'firebase-migrations',
       'agent-state.json'
     );
@@ -193,8 +195,8 @@ export class SafetyManager {
     if (!this.executionState) return;
 
     try {
-      const fs = require('fs-extra');
-      await fs.ensureDir(require('path').dirname(this.stateFilePath));
+      const fs = await import('fs-extra');
+      await fs.ensureDir(path.dirname(this.stateFilePath));
       await fs.writeJSON(this.stateFilePath, this.executionState, { spaces: 2 });
     } catch (error) {
       logger.warn('Impossible de sauvegarder l\'état', error);
@@ -203,7 +205,7 @@ export class SafetyManager {
 
   private async cleanState(): Promise<void> {
     try {
-      const fs = require('fs-extra');
+      const fs = await import('fs-extra');
       if (await fs.pathExists(this.stateFilePath)) {
         await fs.remove(this.stateFilePath);
       }
@@ -216,7 +218,7 @@ export class SafetyManager {
     if (!this.config.crashDetectionEnabled) return;
 
     try {
-      const fs = require('fs-extra');
+      const fs = await import('fs-extra');
       if (!(await fs.pathExists(this.stateFilePath))) return;
 
       const previousState: ExecutionState = await fs.readJSON(this.stateFilePath);
