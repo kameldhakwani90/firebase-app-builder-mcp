@@ -1,7 +1,7 @@
 {
   "name": "@kameldhakwani90/firebase-app-builder-mcp",
-  "version": "1.0.6",
-  "description": "Agent MCP intelligent avec Claude pour analyser, migrer et construire n'importe quelle application web complète",
+  "version": "2.0.0",
+  "description": "🚀 Agent MCP ultra-intelligent avec Claude AI pour migrer automatiquement n'importe quel projet Firebase Studio vers une application Next.js complète avec interface temps réel stylée",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -13,12 +13,38 @@
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
     "mcp": "tsx src/mcp-entry.ts",
+    "agent": "tsx src/agent.ts",
     "test": "vitest",
+    "migrate": "tsx src/agent.ts",
+    "dashboard": "tsx src/utils/progress-ui.ts",
+    "port-check": "tsx src/utils/port-manager.ts",
     "prepublishOnly": "npm run build"
   },
-  "keywords": ["mcp", "firebase", "nextjs", "prisma", "playwright", "agent"],
-  "author": "Claude Code",
+  "keywords": ["mcp", "firebase", "firebase-studio", "nextjs", "prisma", "playwright", "claude", "ai", "agent", "migration", "realtime", "styled-ui", "generic", "adaptive", "ecommerce", "booking", "social", "crm", "blog", "marketplace"],
+  "author": {
+    "name": "Kamel Dhakwani",
+    "email": "kamel.dhakwani@gmail.com",
+    "url": "https://github.com/kameldhakwani90"
+  },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kameldhakwani90/firebase-app-builder-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kameldhakwani90/firebase-app-builder-mcp/issues"
+  },
+  "homepage": "https://github.com/kameldhakwani90/firebase-app-builder-mcp#readme",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "@prisma/client": "^5.0.0",
@@ -26,12 +52,22 @@
     "simple-git": "^3.20.0",
     "fs-extra": "^11.0.0",
     "chalk": "^5.0.0",
-    "inquirer": "^9.0.0"
+    "inquirer": "^9.0.0",
+    "figlet": "^1.7.0",
+    "boxen": "^7.1.1",
+    "gradient-string": "^2.0.2",
+    "cli-progress": "^3.12.0",
+    "cli-table3": "^0.6.3",
+    "ora": "^8.0.1",
+    "blessed": "^0.1.81"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/fs-extra": "^11.0.0",
     "@types/inquirer": "^9.0.0",
+    "@types/figlet": "^1.5.8",
+    "@types/gradient-string": "^1.1.6",
+    "@types/blessed": "^0.1.25",
     "typescript": "^5.0.0",
     "tsx": "^4.0.0",
     "vitest": "^1.0.0",

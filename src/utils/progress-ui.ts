@@ -1,4 +1,7 @@
 import chalk from 'chalk';
+import figlet from 'figlet';
+import boxen from 'boxen';
+import gradient from 'gradient-string';
 import { logger, ProgressUpdate } from './logger.js';
 
 export interface ProgressBarOptions {
@@ -91,14 +94,43 @@ export class ProgressUI {
   }
 
   private renderHeader(): void {
-    const title = chalk.bold.blue('🚀 Firebase App Builder Agent - Dashboard Temps Réel');
-    const separator = chalk.gray('═'.repeat(80));
-    
-    console.log(separator);
-    console.log(chalk.bold.cyan('                       FIREBASE APP BUILDER AGENT'));
-    console.log(chalk.bold.cyan('                         Dashboard de Progression'));
-    console.log(separator);
-    console.log();
+    try {
+      // ASCII Art ultra stylé avec figlet
+      const asciiTitle = figlet.textSync('FIREBASE AGENT', {
+        font: 'ANSI Shadow',
+        horizontalLayout: 'default',
+        verticalLayout: 'default'
+      });
+      
+      // Gradient ultra stylé
+      const gradientTitle = gradient(['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'])(asciiTitle);
+      console.log(gradientTitle);
+      
+      // Box stylé avec informations
+      const headerBox = boxen(
+        `${chalk.bold.cyan('🚀 Firebase App Builder Agent V2.0')}\n` +
+        `${chalk.gray('Intelligence Artificielle • Migration Automatique • Tests E2E')}\n` +
+        `${chalk.yellow('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')}`,
+        {
+          padding: 1,
+          margin: 1,
+          borderStyle: 'double',
+          borderColor: 'cyan',
+          backgroundColor: 'bgBlack'
+        }
+      );
+      
+      console.log(headerBox);
+      
+    } catch (error) {
+      // Fallback si figlet échoue
+      const separator = chalk.gray('═'.repeat(80));
+      console.log(separator);
+      console.log(gradient(['#FF6B6B', '#4ECDC4'])('                       🔥 FIREBASE APP BUILDER AGENT V2.0 🔥'));
+      console.log(chalk.bold.cyan('                         Dashboard de Progression Ultra Stylé'));
+      console.log(separator);
+      console.log();
+    }
   }
 
   private renderProjectInfo(): void {
