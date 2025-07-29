@@ -1,7 +1,7 @@
 {
   "name": "@kameldhakwani90/firebase-app-builder-mcp",
-  "version": "1.0.3",
-  "description": "Agent MCP FirebaseAppBuilder avec mémoire et tests utilisateur réalistes",
+  "version": "1.0.4",
+  "description": "Agent MCP intelligent avec Claude pour analyser, migrer et construire n'importe quelle application web complète",
   "type": "module",
   "main": "dist/index.js",
   "bin": {

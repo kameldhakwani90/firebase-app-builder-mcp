@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { ProjectManager } from './memory/projects.js';
 import { GitCloner } from './tools/cloner.js';
-import { MockAnalyzer } from './tools/analyzer.js';
+import { IntelligentAnalyzer } from './tools/intelligent-analyzer.js';
 import { DatabaseMigrator } from './tools/database.js';
 import { RealisticTester } from './tools/tester.js';
 import { Project } from './types.js';
@@ -10,14 +10,14 @@ import { Project } from './types.js';
 export class FirebaseAppBuilderAgent {
   private projectManager: ProjectManager;
   private gitCloner: GitCloner;
-  private analyzer: MockAnalyzer;
+  private analyzer: IntelligentAnalyzer;
   private dbMigrator: DatabaseMigrator;
   private tester: RealisticTester;
 
   constructor() {
     this.projectManager = new ProjectManager();
     this.gitCloner = new GitCloner();
-    this.analyzer = new MockAnalyzer();
+    this.analyzer = new IntelligentAnalyzer();
     this.dbMigrator = new DatabaseMigrator();
     this.tester = new RealisticTester();
   }
@@ -131,9 +131,9 @@ export class FirebaseAppBuilderAgent {
       throw new Error(cloneResult.error);
     }
 
-    // Analyse des mocks et de la structure
+    // Analyse intelligente du projet avec Claude
     project.status = 'analyzing';
-    const analysisResult = await this.analyzer.analyzeMocks(project.path);
+    const analysisResult = await this.analyzer.analyzeProject(project.path);
     
     // Sauvegarder les résultats
     const stepDuration = Date.now() - stepStart;

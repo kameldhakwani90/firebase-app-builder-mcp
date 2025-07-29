@@ -26,7 +26,7 @@ export interface DataModel {
 }
 
 export interface AppFeature {
-  type: 'auth' | 'crud' | 'api' | 'ui';
+  type: 'auth' | 'crud' | 'api' | 'ui' | 'payment' | 'ai';
   name: string;
   path: string;
   dependencies?: string[];
