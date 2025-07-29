@@ -4,7 +4,7 @@ import { FirebaseAppBuilderAgent } from './agent.js';
 import chalk from 'chalk';
 
 const BANNER = `
-🚀 FirebaseAppBuilder Agent v1.0.0
+🚀 FirebaseAppBuilder Agent v1.0.3
 Agent MCP avec mémoire persistante et tests utilisateur réalistes
 
 Migration automatique: Next.js Mocks → PostgreSQL + Prisma
@@ -26,7 +26,7 @@ async function main() {
     }
     
     if (args.includes('--version') || args.includes('-v')) {
-      console.log('v1.0.0');
+      console.log('v1.0.3');
       return;
     }
     
