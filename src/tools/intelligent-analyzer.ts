@@ -114,55 +114,7 @@ export class IntelligentAnalyzer {
     return structure;
   }
 
-  private async performIntelligentCodeAnalysis(projectPath: string): Promise<any> {
-    const analysis: any = {
-      mainFiles: [],
-      dataUsage: [],
-      stateManagement: [],
-      externalServices: [],
-      businessLogic: []
-    };
-
-    // Trouver les fichiers principaux à analyser
-    const keyFiles = await this.findKeyFiles(projectPath);
-    
-    for (const file of keyFiles.slice(0, 10)) { // Limiter à 10 fichiers
-      try {
-        const content = await fs.readFile(file, 'utf-8');
-        const fileAnalysis = await this.analyzeFileContent(content, file);
-        
-        analysis.mainFiles.push({
-          path: file,
-          analysis: fileAnalysis
-        });
-        
-        // Extraire les patterns de données
-        if (fileAnalysis.dataPatterns?.length > 0) {
-          analysis.dataUsage.push(...fileAnalysis.dataPatterns);
-        }
-        
-        // Détecter la gestion d'état
-        if (fileAnalysis.stateManagement) {
-          analysis.stateManagement.push(fileAnalysis.stateManagement);
-        }
-        
-        // Détecter les services externes
-        if (fileAnalysis.externalServices?.length > 0) {
-          analysis.externalServices.push(...fileAnalysis.externalServices);
-        }
-        
-        // Logique métier
-        if (fileAnalysis.businessLogic?.length > 0) {
-          analysis.businessLogic.push(...fileAnalysis.businessLogic);
-        }
-        
-      } catch (error) {
-        console.warn(chalk.yellow(`⚠️ Impossible d'analyser ${file}`));
-      }
-    }
-
-    return analysis;
-  }
+  // Méthode performIntelligentCodeAnalysis supprimée (duplicata) - version complète plus bas
 
   private async analyzeFileContent(content: string, filePath: string): Promise<any> {
     const analysis: any = {
@@ -1074,14 +1026,14 @@ export class IntelligentAnalyzer {
 
     // Générer les modèles à partir des types Firebase Studio
     if (firebaseStudioData.types?.interfaces) {
-      for (const interface of firebaseStudioData.types.interfaces) {
+      for (const interfaceItem of firebaseStudioData.types.interfaces) {
         const model: DataModel = {
-          name: interface.name,
+          name: interfaceItem.name,
           fields: {},
           mockFile: 'src/lib/types.ts'
         };
         
-        for (const field of interface.fields || []) {
+        for (const field of interfaceItem.fields || []) {
           model.fields[field.name] = this.normalizeTypeForPrisma(field.type);
         }
         
@@ -1124,14 +1076,14 @@ export class IntelligentAnalyzer {
   private extractRelationsFromTypes(interfaces: any[]): any[] {
     const relations: any[] = [];
     
-    for (const interface of interfaces) {
-      for (const field of interface.fields || []) {
+    for (const interfaceItem of interfaces) {
+      for (const field of interfaceItem.fields || []) {
         if (field.name.endsWith('Id') && field.name !== 'id') {
           const relatedModel = field.name.replace('Id', '');
           const capitalizedModel = this.capitalize(relatedModel);
           
           relations.push({
-            from: interface.name,
+            from: interfaceItem.name,
             to: capitalizedModel,
             field: field.name,
             type: 'belongsTo'
@@ -1200,7 +1152,7 @@ export class IntelligentAnalyzer {
     }
 
     // 4. Déduplication et nettoyage
-    authConfig.roles = [...new Set(authConfig.roles)].filter(role => role && role.length > 2);
+    authConfig.roles = [...new Set(authConfig.roles)].filter((role): role is string => typeof role === 'string' && role.length > 2);
     authConfig.multiRole = authConfig.roles.length > 1;
 
     // 5. Génération des permissions dynamiques
@@ -1217,9 +1169,9 @@ export class IntelligentAnalyzer {
   private extractRolesFromTypes(interfaces: any[]): string[] {
     const roles: string[] = [];
 
-    for (const interface of interfaces) {
+    for (const interfaceItem of interfaces) {
       // Chercher les champs 'role', 'userType', 'type', etc.
-      for (const field of interface.fields || []) {
+      for (const field of interfaceItem.fields || []) {
         if (['role', 'userType', 'type', 'accountType', 'memberType'].includes(field.name.toLowerCase())) {
           // Extraire les valeurs possibles depuis le type
           const typeValues = this.extractEnumValues(field.type);
@@ -1228,7 +1180,7 @@ export class IntelligentAnalyzer {
       }
 
       // Détecter les interfaces qui représentent des rôles
-      const interfaceName = interface.name.toLowerCase();
+      const interfaceName = interfaceItem.name.toLowerCase();
       if (interfaceName.includes('user') || interfaceName.includes('account') || interfaceName.includes('member')) {
         // C'est probablement un type d'utilisateur - extraire le préfixe comme rôle
         const possibleRole = interfaceName.replace(/user|account|member/g, '').trim();
@@ -1371,7 +1323,7 @@ export class IntelligentAnalyzer {
     const features: AppFeature[] = [];
 
     // Patterns génériques pour détecter les fonctionnalités
-    const featurePatterns = [
+    const featurePatterns: { pattern: RegExp; feature: AppFeature }[] = [
       { pattern: /qr\s*code/gi, feature: { type: 'business', name: 'QR Code System', path: 'qr-codes' } },
       { pattern: /payment|billing|checkout/gi, feature: { type: 'business', name: 'Payment System', path: 'payments' } },
       { pattern: /notification|email|sms/gi, feature: { type: 'business', name: 'Notification System', path: 'notifications' } },
@@ -1422,7 +1374,7 @@ export class IntelligentAnalyzer {
    */
   private mapPageToFeature(pageName: string): AppFeature | null {
     // Patterns génériques de mapping
-    const patterns = [
+    const patterns: { keywords: string[]; feature: AppFeature }[] = [
       { keywords: ['dashboard', 'home', 'index'], feature: { type: 'crud', name: 'Dashboard', path: 'dashboard' } },
       { keywords: ['profile', 'account', 'settings'], feature: { type: 'crud', name: 'Profile Management', path: 'profile' } },
       { keywords: ['user', 'users', 'member'], feature: { type: 'crud', name: 'User Management', path: 'users' } },

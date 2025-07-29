@@ -168,43 +168,11 @@ export class AgentLogger {
   }
 
   // Méthodes de gestion du projet et des étapes
-  setCurrentProject(projectName: string): void {
-    this.currentProject = projectName;
-    this.log('INFO', `Démarrage du projet: ${projectName}`);
-  }
+  // Méthode setCurrentProject supprimée (duplicata) - version complète plus bas
 
-  startStep(stepIndex: number): void {
-    this.currentStepIndex = stepIndex;
-    this.stepStartTime = Date.now();
-    this.log('INFO', `Début de l'étape: ${this.getCurrentStepName()}`);
-  }
+  // Méthode startStep supprimée (duplicata) - version complète plus bas
 
-  updateProgress(message: string, progress?: number): void {
-    if (!this.currentProject) return;
-
-    const timeElapsed = this.stepStartTime ? Date.now() - this.stepStartTime : 0;
-    const calculatedProgress = progress ?? (this.currentStepIndex / this.totalSteps) * 100;
-
-    const update: ProgressUpdate = {
-      projectName: this.currentProject,
-      currentStep: this.getCurrentStepName(),
-      progress: Math.min(calculatedProgress, 100),
-      message,
-      timeElapsed,
-      estimatedTimeRemaining: this.estimateTimeRemaining(calculatedProgress, timeElapsed)
-    };
-
-    // Notifier tous les callbacks de progression
-    this.progressCallbacks.forEach(callback => {
-      try {
-        callback(update);
-      } catch (error) {
-        this.log('ERROR', 'Erreur dans callback de progression', undefined, error);
-      }
-    });
-
-    this.log('DEBUG', `Progression: ${message}`, { progress: calculatedProgress });
-  }
+  // Méthode updateProgress supprimée (duplicata) - version complète plus bas
 
   private estimateTimeRemaining(progress: number, timeElapsed: number): number | undefined {
     if (progress <= 0) return undefined;
@@ -213,11 +181,7 @@ export class AgentLogger {
     return Math.max(0, totalEstimatedTime - timeElapsed);
   }
 
-  completeStep(): void {
-    const stepDuration = this.stepStartTime ? Date.now() - this.stepStartTime : 0;
-    this.log('SUCCESS', `Étape terminée: ${this.getCurrentStepName()}`, { duration: stepDuration });
-    this.currentStepIndex++;
-  }
+  // Méthode completeStep supprimée (duplicata) - version complète plus bas
 
   // Méthodes publiques pour les logs
   debug(message: string, data?: any): Promise<void> {
@@ -602,6 +566,13 @@ export class AgentLogger {
     };
     console.log(chalk.cyan(`📂 Nouveau projet: ${projectName}`));
     this.info(`Nouveau projet démarré: ${projectName}`);
+  }
+
+  /**
+   * Retourne les statistiques actuelles du projet
+   */
+  getCurrentStats(): typeof this.currentStats {
+    return { ...this.currentStats };
   }
 }
 
