@@ -1,19 +1,20 @@
 {
-  "name": "firebase-app-builder-mcp",
-  "version": "1.0.1",
+  "name": "@kameldhakwani90/firebase-app-builder-mcp",
+  "version": "1.0.2",
   "description": "Agent MCP FirebaseAppBuilder avec mémoire et tests utilisateur réalistes",
   "type": "module",
   "main": "dist/index.js",
+  "bin": {
+    "firebase-app-builder": "./dist/index.js",
+    "firebase-app-builder-mcp": "./dist/mcp-entry.js"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
     "mcp": "tsx src/mcp-entry.ts",
-    "test": "vitest"
-  },
-  "bin": {
-    "firebase-app-builder": "dist/index.js",
-    "firebase-app-builder-mcp": "dist/mcp-entry.js"
+    "test": "vitest",
+    "prepublishOnly": "npm run build"
   },
   "keywords": ["mcp", "firebase", "nextjs", "prisma", "playwright", "agent"],
   "author": "Claude Code",
