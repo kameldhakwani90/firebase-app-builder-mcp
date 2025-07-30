@@ -101,10 +101,18 @@ export class FirebaseAppBuilderAgent {
     // Vérifier si le projet existe déjà
     const existingProject = await this.projectManager.checkExistingProject(repoUrl);
     if (existingProject) {
-      const continueExisting = await this.askUserContinue(existingProject);
-      if (continueExisting) {
+      const userChoice = await this.askUserContinue(existingProject);
+      
+      if (userChoice === 'continue') {
         await this.continueProject(existingProject.name);
         return;
+      } else if (userChoice === 'cancel') {
+        console.log(chalk.yellow('🚫 Migration annulée par l\'utilisateur'));
+        return;
+      } else if (userChoice === 'restart') {
+        // Supprimer le projet existant pour recommencer
+        await this.projectManager.deleteProject(existingProject.name);
+        console.log(chalk.blue('🗑️ Projet existant supprimé, redémarrage...'));
       }
     }
 
@@ -954,17 +962,31 @@ Pour le reprendre plus tard : \`firebase-app-builder continue ${project.name}\`
     console.log(chalk.green(`📋 Rapport final généré: ${reportPath}`));
   }
 
-  private async askUserContinue(project: Project): Promise<boolean> {
+  private async askUserContinue(project: Project): Promise<'continue' | 'restart' | 'cancel'> {
     const response = await inquirer.prompt([
       {
-        type: 'confirm',
-        name: 'continue',
-        message: `Le projet "${project.name}" existe déjà. Continuer où vous vous êtes arrêté ?`,
-        default: true
+        type: 'list',
+        name: 'action',
+        message: `Le projet "${project.name}" existe déjà. Que voulez-vous faire ?`,
+        choices: [
+          {
+            name: '🔄 Continuer où je me suis arrêté',
+            value: 'continue'
+          },
+          {
+            name: '🆕 Recommencer depuis le début (écraser)',
+            value: 'restart'
+          },
+          {
+            name: '❌ Annuler',
+            value: 'cancel'
+          }
+        ],
+        default: 'continue'
       }
     ]);
     
-    return response.continue;
+    return response.action;
   }
 
   private isValidGitUrl(url: string): boolean {

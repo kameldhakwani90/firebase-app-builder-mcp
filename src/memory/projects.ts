@@ -146,6 +146,10 @@ export class ProjectManager {
     await this.workspace.listProjects();
   }
 
+  async deleteProject(name: string): Promise<boolean> {
+    return await this.workspace.deleteProject(name);
+  }
+
   async cleanup(): Promise<void> {
     await this.workspace.cleanupOldProjects();
   }

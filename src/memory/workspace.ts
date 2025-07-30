@@ -119,6 +119,31 @@ export class WorkspaceManager {
     return urlParts[urlParts.length - 1].replace(/\.git$/, '');
   }
 
+  async deleteProject(name: string): Promise<boolean> {
+    const projects = await this.getProjects();
+    const project = projects.find(p => p.name === name);
+    
+    if (!project) {
+      return false;
+    }
+    
+    try {
+      // Supprimer le dossier du projet
+      if (await fs.pathExists(project.path)) {
+        await fs.remove(project.path);
+      }
+      
+      // Retirer le projet de la base de données
+      const updatedProjects = projects.filter(p => p.name !== name);
+      await fs.writeJSON(this.projectsDB, updatedProjects, { spaces: 2 });
+      
+      return true;
+    } catch (error) {
+      console.error(chalk.red(`❌ Erreur lors de la suppression du projet ${name}:`), error);
+      return false;
+    }
+  }
+
   async cleanupOldProjects(maxAge: number = 30): Promise<void> {
     const projects = await this.getProjects();
     const cutoffDate = new Date();
