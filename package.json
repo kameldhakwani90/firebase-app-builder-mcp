@@ -1,6 +1,6 @@
 {
   "name": "@kameldhakwani90/firebase-app-builder-mcp",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "🚀 Agent MCP ultra-intelligent avec Claude AI pour migrer automatiquement n'importe quel projet Firebase Studio vers une application Next.js complète avec interface temps réel stylée",
   "type": "module",
   "main": "dist/index.js",
