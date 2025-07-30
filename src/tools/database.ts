@@ -1,11 +1,55 @@
 import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
-import { spawn } from 'child_process';
+import { spawn, exec } from 'child_process';
+import { promisify } from 'util';
 import { DataModel } from '../types.js';
+import { UserInputManager, DatabaseConfig } from '../utils/user-input.js';
+import { VersionManager } from '../utils/version-manager.js';
+
+const execAsync = promisify(exec);
 
 export class DatabaseMigrator {
+  private userInput = new UserInputManager();
+  private versionManager = new VersionManager();
+  private databaseConfig?: DatabaseConfig;
   
+  private async validateEnvironment(): Promise<void> {
+    console.log(chalk.blue('🔍 Validation de l\'environnement...'));
+    
+    const envCheck = await this.versionManager.validateEnvironment();
+    
+    if (!envCheck.compatible) {
+      throw new Error(`Environnement incompatible: ${envCheck.issues.join(', ')}`);
+    }
+  }
+  
+  private async getDatabaseUrl(projectPath: string): Promise<string> {
+    // Utiliser la config saisie par l'utilisateur si disponible
+    if (this.databaseConfig) {
+      return this.userInput.buildDatabaseUrl(this.databaseConfig);
+    }
+    
+    // Vérifier dans .env.local d'abord
+    const envLocalPath = path.join(projectPath, '.env.local');
+    if (await fs.pathExists(envLocalPath)) {
+      const content = await fs.readFile(envLocalPath, 'utf-8');
+      const match = content.match(/DATABASE_URL\s*=\s*["']([^"']+)["']/);
+      if (match) return match[1];
+    }
+    
+    // Puis dans .env
+    const envPath = path.join(projectPath, '.env');
+    if (await fs.pathExists(envPath)) {
+      const content = await fs.readFile(envPath, 'utf-8');
+      const match = content.match(/DATABASE_URL\s*=\s*["']([^"']+)["']/);
+      if (match) return match[1];
+    }
+    
+    // Valeur par défaut si rien trouvé
+    return 'postgresql://postgres:admin@localhost:5432/mydb?schema=public';
+  }
+
   async setupPrismaDatabase(
     projectPath: string, 
     dataModels: DataModel[]
@@ -13,23 +57,45 @@ export class DatabaseMigrator {
     try {
       console.log(chalk.blue('🗄️  Configuration de la base de données Prisma...'));
       
-      // 1. Installer Prisma
-      await this.installPrisma(projectPath);
+      // 0. Valider l'environnement (Node.js, npm)
+      await this.validateEnvironment();
       
-      // 2. Initialiser Prisma
+      // 1. Demander la configuration de la base de données
+      const projectName = path.basename(projectPath);
+      this.databaseConfig = await this.userInput.promptDatabaseConfig(projectName);
+      
+      // 2. Installer Prisma avec gestion des versions
+      await this.installPrismaWithVersionCheck(projectPath);
+      
+      // 3. Initialiser Prisma
       await this.initializePrisma(projectPath);
       
-      // 3. Générer le schéma depuis les modèles
+      // 3. Configurer les variables d'environnement (avant le schéma)
+      await this.setupEnvironmentVariables(projectPath);
+      
+      // 4. Générer le schéma depuis les modèles
       await this.generatePrismaSchema(projectPath, dataModels);
       
-      // 4. Créer la migration initiale
-      await this.createInitialMigration(projectPath);
+      // 5. Demander quand faire la migration
+      const migrationChoice = await this.userInput.promptMigrationChoice();
       
-      // 5. Générer le client Prisma
-      await this.generatePrismaClient(projectPath);
-      
-      // 6. Configurer les variables d'environnement
-      await this.setupEnvironmentVariables(projectPath);
+      if (migrationChoice === 'now') {
+        // 6. Créer la migration initiale
+        await this.createInitialMigration(projectPath);
+        
+        // 7. Générer le client Prisma
+        await this.generatePrismaClient(projectPath);
+      } else if (migrationChoice === 'later') {
+        console.log(chalk.yellow('⏳ Migration reportée - pensez à exécuter "prisma migrate dev" plus tard'));
+        // Générer le client quand même
+        try {
+          await this.generatePrismaClient(projectPath);
+        } catch (error) {
+          console.log(chalk.yellow('⚠️  Client Prisma non généré - exécutez "prisma generate" après la migration'));
+        }
+      } else {
+        console.log(chalk.yellow('⏭️  Migration ignorée - fichiers générés uniquement'));
+      }
       
       console.log(chalk.green('✅ Base de données Prisma configurée'));
       return { success: true };
@@ -40,24 +106,23 @@ export class DatabaseMigrator {
     }
   }
 
-  private async installPrisma(projectPath: string): Promise<void> {
-    console.log(chalk.blue('📦 Installation de Prisma...'));
-    
-    return new Promise((resolve, reject) => {
-      const install = spawn('npm', ['install', 'prisma', '@prisma/client'], {
-        cwd: projectPath,
-        stdio: 'pipe'
-      });
+  private async installPrismaWithVersionCheck(projectPath: string): Promise<void> {
+    try {
+      // Vérifier si Prisma est déjà installé
+      const currentVersion = await this.versionManager.checkPrismaVersion(projectPath);
       
-      install.on('close', (code) => {
-        if (code === 0) {
-          console.log(chalk.green('✅ Prisma installé'));
-          resolve();
-        } else {
-          reject(new Error(`Installation Prisma échouée avec le code ${code}`));
-        }
-      });
-    });
+      if (currentVersion) {
+        console.log(chalk.green(`✅ Prisma v${currentVersion.version} déjà installé`));
+        return;
+      }
+      
+      // Installer la version recommandée
+      await this.versionManager.installSpecificPrismaVersion(projectPath);
+      
+    } catch (error: any) {
+      console.error(chalk.red(`❌ Erreur installation Prisma: ${error.message}`));
+      throw new Error(`Installation Prisma échouée: ${error.message}`);
+    }
   }
 
   private async initializePrisma(projectPath: string): Promise<void> {
@@ -66,21 +131,20 @@ export class DatabaseMigrator {
     if (!await fs.pathExists(prismaDir)) {
       console.log(chalk.blue('🔧 Initialisation de Prisma...'));
       
-      return new Promise((resolve, reject) => {
-        const init = spawn('npx', ['prisma', 'init'], {
+      try {
+        const command = process.platform === 'win32' 
+          ? 'npx.cmd prisma init'
+          : 'npx prisma init';
+          
+        await execAsync(command, { 
           cwd: projectPath,
-          stdio: 'pipe'
+          timeout: 60000 // 1 minute timeout
         });
         
-        init.on('close', (code) => {
-          if (code === 0) {
-            console.log(chalk.green('✅ Prisma initialisé'));
-            resolve();
-          } else {
-            reject(new Error(`Initialisation Prisma échouée avec le code ${code}`));
-          }
-        });
-      });
+        console.log(chalk.green('✅ Prisma initialisé'));
+      } catch (error: any) {
+        throw new Error(`Initialisation Prisma échouée: ${error.message}`);
+      }
     }
   }
 
@@ -158,53 +222,64 @@ ${timestamps}
   private async createInitialMigration(projectPath: string): Promise<void> {
     console.log(chalk.blue('🔄 Création de la migration initiale...'));
     
-    return new Promise((resolve, reject) => {
-      const migrate = spawn('npx', ['prisma', 'migrate', 'dev', '--name', 'init'], {
+    try {
+      // Lire la DATABASE_URL depuis .env.local ou .env
+      const databaseUrl = await this.getDatabaseUrl(projectPath);
+      
+      const command = process.platform === 'win32' 
+        ? 'npx.cmd prisma migrate dev --name init'
+        : 'npx prisma migrate dev --name init';
+        
+      await execAsync(command, { 
         cwd: projectPath,
-        stdio: 'pipe',
-        env: { ...process.env, DATABASE_URL: 'postgresql://user:password@localhost:5432/mydb?schema=public' }
+        timeout: 120000,
+        env: { ...process.env, DATABASE_URL: databaseUrl }
       });
       
-      migrate.on('close', (code) => {
-        if (code === 0) {
-          console.log(chalk.green('✅ Migration initiale créée'));
-          resolve();
-        } else {
-          console.log(chalk.yellow('⚠️  Migration ignorée (base de données non accessible)'));
-          resolve(); // Ne pas faire échouer si pas de DB
-        }
-      });
-    });
+      console.log(chalk.green('✅ Migration initiale créée'));
+    } catch (error: any) {
+      console.log(chalk.yellow(`⚠️ Migration ignorée: ${error.message}`));
+      // Ne pas faire échouer si pas de DB accessible
+    }
   }
 
   private async generatePrismaClient(projectPath: string): Promise<void> {
     console.log(chalk.blue('🔧 Génération du client Prisma...'));
     
-    return new Promise((resolve, reject) => {
-      const generate = spawn('npx', ['prisma', 'generate'], {
+    try {
+      const command = process.platform === 'win32' 
+        ? 'npx.cmd prisma generate'
+        : 'npx prisma generate';
+        
+      await execAsync(command, { 
         cwd: projectPath,
-        stdio: 'pipe'
+        timeout: 120000
       });
       
-      generate.on('close', (code) => {
-        if (code === 0) {
-          console.log(chalk.green('✅ Client Prisma généré'));
-          resolve();
-        } else {
-          reject(new Error(`Génération client Prisma échouée avec le code ${code}`));
-        }
-      });
-    });
+      console.log(chalk.green('✅ Client Prisma généré'));
+    } catch (error: any) {
+      throw new Error(`Génération client Prisma échouée: ${error.message}`);
+    }
   }
 
   private async setupEnvironmentVariables(projectPath: string): Promise<void> {
     console.log(chalk.blue('🔧 Configuration des variables d\'environnement...'));
     
+    if (!this.databaseConfig) {
+      throw new Error('Configuration de base de données manquante');
+    }
+    
+    const databaseUrl = this.userInput.buildDatabaseUrl(this.databaseConfig);
+    
     const envContent = `# Environment variables declared in this file are available at build-time and run-time.
 # Next.js will automatically read this file and make the variables available.
 
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/mydb?schema=public"
+# Database Configuration
+DATABASE_URL="${databaseUrl}"
+DB_HOST="${this.databaseConfig.host}"
+DB_PORT="${this.databaseConfig.port}"
+DB_USER="${this.databaseConfig.username}"
+DB_NAME="${this.databaseConfig.database}"
 
 # Prisma
 PRISMA_CLI_QUERY_ENGINE_TYPE="binary"
@@ -217,12 +292,16 @@ NODE_ENV="development"
     
     const envPath = path.join(projectPath, '.env.local');
     
-    if (!await fs.pathExists(envPath)) {
-      await fs.writeFile(envPath, envContent);
-      console.log(chalk.green('✅ Fichier .env.local créé'));
-    } else {
-      console.log(chalk.yellow('⚠️  Fichier .env.local existe déjà'));
+    if (await fs.pathExists(envPath)) {
+      const shouldOverwrite = await this.userInput.promptOverwriteConfirmation('.env.local');
+      if (!shouldOverwrite) {
+        console.log(chalk.yellow('⚠️  Fichier .env.local conservé tel quel'));
+        return;
+      }
     }
+    
+    await fs.writeFile(envPath, envContent);
+    console.log(chalk.green('✅ Fichier .env.local créé avec votre configuration'));
 
     // Ajouter .env.local au .gitignore
     await this.updateGitignore(projectPath);
