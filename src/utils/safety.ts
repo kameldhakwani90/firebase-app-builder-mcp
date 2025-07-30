@@ -1,6 +1,7 @@
 import { logger } from './logger.js';
 import path from 'path';
 import os from 'os';
+import fs from 'fs-extra';
 
 export interface SafetyConfig {
   maxRetries: number;
@@ -195,22 +196,25 @@ export class SafetyManager {
     if (!this.executionState) return;
 
     try {
-      const fs = await import('fs-extra');
       await fs.ensureDir(path.dirname(this.stateFilePath));
       await fs.writeJSON(this.stateFilePath, this.executionState, { spaces: 2 });
-    } catch (error) {
+      console.log(`💾 État sauvegardé: ${this.stateFilePath}`);
+    } catch (error: any) {
       logger.warn('Impossible de sauvegarder l\'état', error);
+      console.log(`❌ Erreur sauvegarde: ${error?.message || error}`);
     }
   }
 
   private async cleanState(): Promise<void> {
     try {
-      const fs = await import('fs-extra');
       if (await fs.pathExists(this.stateFilePath)) {
         await fs.remove(this.stateFilePath);
+        console.log(`🗑️ État nettoyé: ${this.stateFilePath}`);
       }
+      this.executionState = undefined;
     } catch (error) {
       logger.debug('Erreur lors du nettoyage de l\'état', error);
+      console.log(`⚠️ Erreur nettoyage état (ignorée)`);
     }
   }
 
@@ -218,7 +222,6 @@ export class SafetyManager {
     if (!this.config.crashDetectionEnabled) return;
 
     try {
-      const fs = await import('fs-extra');
       if (!(await fs.pathExists(this.stateFilePath))) return;
 
       const previousState: ExecutionState = await fs.readJSON(this.stateFilePath);

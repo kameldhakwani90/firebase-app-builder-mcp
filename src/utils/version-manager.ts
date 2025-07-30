@@ -24,36 +24,55 @@ export class VersionManager {
   }
 
   async checkNpmVersion(): Promise<VersionInfo> {
-    try {
-      const command = process.platform === 'win32' ? 'npm.cmd --version' : 'npm --version';
-      const { stdout } = await execAsync(command);
-      const version = stdout.trim();
-      return this.parseVersion(version);
-    } catch (error) {
-      throw new Error('npm n\'est pas installé ou accessible');
+    // Essayer plusieurs commandes npm selon l'environnement
+    const commands = [
+      'npm --version',           // Standard Unix/Linux et MINGW
+      'npm.cmd --version',       // Windows CMD
+      'npx --version'            // Fallback avec npx
+    ];
+
+    for (const command of commands) {
+      try {
+        const { stdout } = await execAsync(command);
+        const version = stdout.trim();
+        if (version && /^\d+\.\d+\.\d+/.test(version)) {
+          return this.parseVersion(version);
+        }
+      } catch (error) {
+        // Continuer avec la commande suivante
+        continue;
+      }
     }
+    
+    throw new Error('npm n\'est pas installé ou accessible. Vérifiez votre installation Node.js.');
   }
 
   async checkPrismaVersion(projectPath: string): Promise<VersionInfo | null> {
-    try {
-      const command = process.platform === 'win32' ? 'npx.cmd prisma --version' : 'npx prisma --version';
-      const { stdout } = await execAsync(command, { cwd: projectPath });
-      
-      // Prisma CLI affiche plusieurs lignes, on cherche la ligne avec la version
-      const lines = stdout.split('\n');
-      const versionLine = lines.find(line => line.includes('prisma'));
-      
-      if (versionLine) {
-        const match = versionLine.match(/(\d+\.\d+\.\d+)/);
-        if (match) {
-          return this.parseVersion(match[1]);
+    const commands = [
+      'npx prisma --version',     // Standard
+      'npx.cmd prisma --version'  // Windows CMD
+    ];
+
+    for (const command of commands) {
+      try {
+        const { stdout } = await execAsync(command, { cwd: projectPath });
+        
+        // Prisma CLI affiche plusieurs lignes, on cherche la ligne avec la version
+        const lines = stdout.split('\n');
+        const versionLine = lines.find(line => line.includes('prisma'));
+        
+        if (versionLine) {
+          const match = versionLine.match(/(\d+\.\d+\.\d+)/);
+          if (match) {
+            return this.parseVersion(match[1]);
+          }
         }
+      } catch (error) {
+        continue;
       }
-      
-      return null;
-    } catch (error) {
-      return null; // Prisma n'est pas installé
     }
+    
+    return null; // Prisma n'est pas installé
   }
 
   private parseVersion(versionString: string): VersionInfo {
@@ -145,22 +164,28 @@ export class VersionManager {
   }
 
   async getRecommendedPrismaVersion(): Promise<string> {
-    try {
-      // Vérifier la dernière version stable de Prisma
-      const command = process.platform === 'win32' 
-        ? 'npm.cmd view prisma version' 
-        : 'npm view prisma version';
+    const commands = [
+      'npm view prisma version',
+      'npm.cmd view prisma version'
+    ];
+
+    for (const command of commands) {
+      try {
+        const { stdout } = await execAsync(command);
+        const latestVersion = stdout.trim();
         
-      const { stdout } = await execAsync(command);
-      const latestVersion = stdout.trim();
-      
-      console.log(chalk.blue(`📦 Dernière version Prisma: v${latestVersion}`));
-      return latestVersion;
-    } catch (error) {
-      // Version par défaut si on ne peut pas récupérer la dernière
-      console.log(chalk.yellow('⚠️  Impossible de vérifier la dernière version Prisma, utilisation de la version par défaut'));
-      return '5.7.0'; // Version stable connue
+        if (latestVersion && /^\d+\.\d+\.\d+/.test(latestVersion)) {
+          console.log(chalk.blue(`📦 Dernière version Prisma: v${latestVersion}`));
+          return latestVersion;
+        }
+      } catch (error) {
+        continue;
+      }
     }
+    
+    // Version par défaut si on ne peut pas récupérer la dernière
+    console.log(chalk.yellow('⚠️  Impossible de vérifier la dernière version Prisma, utilisation de la version par défaut'));
+    return '5.7.0'; // Version stable connue
   }
 
   async installSpecificPrismaVersion(projectPath: string, version?: string): Promise<void> {
@@ -173,23 +198,29 @@ export class VersionManager {
       `@prisma/client@${targetVersion}`
     ];
     
-    const command = process.platform === 'win32' 
-      ? `npm.cmd install ${packages.join(' ')}`
-      : `npm install ${packages.join(' ')}`;
+    const commands = [
+      `npm install ${packages.join(' ')}`,
+      `npm.cmd install ${packages.join(' ')}`
+    ];
       
-    try {
-      const { stdout, stderr } = await execAsync(command, { 
-        cwd: projectPath,
-        timeout: 180000 // 3 minutes
-      });
-      
-      if (stderr && !stderr.includes('WARN')) {
-        console.log(chalk.yellow(`⚠️ Avertissements: ${stderr}`));
+    for (const command of commands) {
+      try {
+        const { stdout, stderr } = await execAsync(command, { 
+          cwd: projectPath,
+          timeout: 180000 // 3 minutes
+        });
+        
+        if (stderr && !stderr.includes('WARN')) {
+          console.log(chalk.yellow(`⚠️ Avertissements: ${stderr}`));
+        }
+        
+        console.log(chalk.green(`✅ Prisma v${targetVersion} installé`));
+        return; // Installation réussie
+      } catch (error: any) {
+        continue; // Essayer la commande suivante
       }
-      
-      console.log(chalk.green(`✅ Prisma v${targetVersion} installé`));
-    } catch (error: any) {
-      throw new Error(`Installation Prisma v${targetVersion} échouée: ${error.message}`);
     }
+    
+    throw new Error(`Installation Prisma v${targetVersion} échouée sur toutes les tentatives`);
   }
 }
