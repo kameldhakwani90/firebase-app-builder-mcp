@@ -5,6 +5,41 @@ All notable changes to Firebase App Builder Agent will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.2] - 2025-07-30 🔧 CRITICAL BUG FIXES
+
+### 🔧 Critical Bug Fixes
+- **FIXED:** `spawn npm ENOENT` error causing systematic crashes on Windows
+- **FIXED:** Hardcoded PostgreSQL credentials preventing custom database access  
+- **FIXED:** Undefined substring error in claude-integration.js
+- **FIXED:** Poor npm/Prisma version management causing installation failures
+
+### 🆕 Major Enhancements
+- **NEW:** Interactive PostgreSQL configuration with user prompts
+- **NEW:** Comprehensive environment validation (Node.js >= 18, npm >= 8)
+- **NEW:** Intelligent Prisma version management with latest stable detection
+- **NEW:** Flexible migration timing (now/later/skip options)
+- **NEW:** Enhanced error handling with actionable solutions
+
+### 💻 Technical Improvements
+- Replaced `spawn()` with `execAsync()` for Windows compatibility
+- Added `UserInputManager` for interactive database configuration
+- Added `VersionManager` for robust npm/Prisma version handling
+- Cross-platform command execution (npm.cmd on Windows)
+- Comprehensive timeout and error management
+
+### 📁 New Files
+- `src/utils/user-input.ts` - Interactive user interface manager
+- `src/utils/version-manager.ts` - Version validation and management
+- `FIXES.md` - Detailed documentation of all corrections
+
+### 🎯 User Experience
+- Interactive PostgreSQL setup with connection testing
+- Clear progress indicators and informative error messages
+- Guided migration process with user choices
+- Robust failure recovery and continuation options
+
+---
+
 ## [2.0.0] - 2024-01-15 🚀 RÉVOLUTION GÉNÉRIQUE
 
 ### 🎯 BREAKING CHANGES

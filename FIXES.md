@@ -1,4 +1,4 @@
-# 🔧 Corrections importantes - Version 2.0.0-beta.2
+# 🔧 Corrections importantes - Version 2.0.2
 
 ## ❌ Problèmes corrigés
 
@@ -112,7 +112,7 @@ npm install -g .
 
 # Tester
 firebase-app-builder --version
-# Doit afficher: v2.0.0-beta.2
+# Doit afficher: v2.0.2
 ```
 
 ## 🎉 Résultat attendu
@@ -126,7 +126,7 @@ L'agent devrait maintenant :
 
 ---
 
-**Version :** 2.0.0-beta.2  
+**Version :** 2.0.2  
 **Date :** 30 juillet 2025  
 **Auteur des corrections :** Assistant Claude  
 **Status :** Prêt pour tests utilisateur
