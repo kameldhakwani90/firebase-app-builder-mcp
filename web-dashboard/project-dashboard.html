@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 Firebase App Builder - Dashboard Projet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header-left h1 {
+            font-size: 2.2em;
+            margin-bottom: 5px;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-left p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #6c757d, #5a6268);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .progress-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .progress-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .progress-percentage {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .steps-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .step-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .step-item.completed {
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+            border: 1px solid #4CAF50;
+        }
+
+        .step-item.completed::before {
+            background: #4CAF50;
+        }
+
+        .step-item.active {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border: 1px solid #FF9800;
+            animation: pulse 2s infinite;
+        }
+
+        .step-item.active::before {
+            background: #FF9800;
+        }
+
+        .step-item.pending {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+        }
+
+        .step-item.error {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            border: 1px solid #f44336;
+        }
+
+        .step-item.error::before {
+            background: #f44336;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 152, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0); }
+        }
+
+        .step-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            margin-right: 20px;
+            background: #e0e0e0;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .step-item.completed .step-icon {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .step-item.active .step-icon {
+            background: #FF9800;
+            color: white;
+            animation: spin 2s linear infinite;
+        }
+
+        .step-item.error .step-icon {
+            background: #f44336;
+            color: white;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .step-description {
+            color: #666;
+            font-size: 0.95em;
+            margin-bottom: 10px;
+        }
+
+        .step-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .step-time {
+            font-size: 0.85em;
+            color: #999;
+        }
+
+        .step-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 500;
+        }
+
+        .status-completed {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status-active {
+            background: #FF9800;
+            color: white;
+        }
+
+        .status-pending {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .status-error {
+            background: #f44336;
+            color: white;
+        }
+
+        .logs-container {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 20px;
+            color: #00ff00;
+            font-family: 'Consolas', 'Monaco', monospace;
+            max-height: 400px;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+
+        .log-line {
+            margin-bottom: 3px;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+            word-wrap: break-word;
+        }
+
+        .log-line.error {
+            color: #ff6b6b;
+        }
+
+        .log-line.warning {
+            color: #ffd93d;
+        }
+
+        .log-line.info {
+            color: #6bcf7f;
+        }
+
+        .log-line.success {
+            color: #4ecdc4;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .config-section {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .config-item {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .config-label {
+            font-weight: 600;
+            color: #1976d2;
+            margin-bottom: 5px;
+        }
+
+        .config-value {
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .actions-section {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+
+        .notification.error {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+
+        .notification.warning {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .right-panel {
+                order: -1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <h1 id="project-title">🔥 Projet: Kalliky</h1>
+                <p id="project-status">État: Configuration PostgreSQL - 33%</p>
+            </div>
+            <div class="header-controls">
+                <a href="/" class="btn btn-secondary">← Accueil</a>
+                <button class="btn btn-primary" onclick="pauseProject()" id="pause-btn">
+                    ⏸️ Pause
+                </button>
+                <button class="btn btn-danger" onclick="stopProject()" id="stop-btn">
+                    ⏹️ Arrêter
+                </button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Left Panel -->
+            <div class="left-panel">
+                <!-- Progress Section -->
+                <div class="progress-section">
+                    <div class="progress-header">
+                        <div class="progress-title">📈 Progression du projet</div>
+                        <div class="progress-percentage" id="overall-progress">33%</div>
+                    </div>
+
+                    <div class="steps-container" id="steps-container">
+                        <!-- Steps will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Logs Section -->
+                <div class="card">
+                    <h3 style="margin-bottom: 20px;">📝 Logs en temps réel</h3>
+                    <div class="logs-container" id="logs-container">
+                        <div class="log-line info">🔍 Initialisation du dashboard...</div>
+                        <div class="log-line success">✅ Connexion au serveur établie</div>
+                        <div class="log-line info">🔄 Démarrage de l'analyse du projet Firebase...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="right-panel">
+                <!-- Project Stats -->
+                <div class="card">
+                    <h3 style="margin-bottom: 20px;">📊 Statistiques</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="elapsed-time">05:42</div>
+                            <div class="stat-label">Temps écoulé</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="eta">~08:30</div>
+                            <div class="stat-label">Temps restant</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="files-processed">47</div>
+                            <div class="stat-label">Fichiers traités</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="components-generated">12</div>
+                            <div class="stat-label">Composants créés</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project Configuration -->
+                <div class="card">
+                    <h3 style="margin-bottom: 20px;">⚙️ Configuration</h3>
+                    <div class="config-section">
+                        <h4 style="color: #1976d2; margin-bottom: 15px;">Informations générales</h4>
+                        <div class="config-grid">
+                            <div class="config-item">
+                                <div class="config-label">URL GitHub</div>
+                                <div class="config-value" id="github-url">github.com/user/kalliky</div>
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Type d'app</div>
+                                <div class="config-value" id="app-type">🛒 E-commerce</div>
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Base de données</div>
+                                <div class="config-value" id="database-config">PostgreSQL - localhost:5432</div>
+                            </div>
+                            <div class="config-item">
+                                <div class="config-label">Démarré</div>
+                                <div class="config-value" id="started-at">30/07/2025 14:30</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="card">
+                    <h3 style="margin-bottom: 20px;">🎮 Actions</h3>
+                    <div class="actions-section">
+                        <button class="btn btn-primary" onclick="viewFiles()" style="width: 100%; margin-bottom: 10px;">
+                            📁 Voir les fichiers générés
+                        </button>
+                        <button class="btn btn-secondary" onclick="downloadProject()" style="width: 100%; margin-bottom: 10px;">
+                            💾 Télécharger le projet
+                        </button>
+                        <button class="btn btn-secondary" onclick="openInVSCode()" style="width: 100%; margin-bottom: 10px;">
+                            💻 Ouvrir dans VS Code
+                        </button>
+                        <button class="btn btn-secondary" onclick="viewLogs()" style="width: 100%;">
+                            📋 Exporter les logs
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        let ws = null;
+        let projectData = {
+            name: 'kalliky',
+            status: 'running',
+            currentStep: 3,
+            progress: 33
+        };
+
+        const steps = [
+            {
+                id: 1,
+                icon: '🔍',
+                title: 'Analyse Firebase Studio',
+                description: 'Scan automatique des composants et données Firebase',
+                status: 'completed',
+                duration: '2m 15s'
+            },
+            {
+                id: 2,
+                icon: '📋',
+                title: 'Génération du schéma',
+                description: 'Création du schéma de base de données Prisma',
+                status: 'completed',
+                duration: '45s'
+            },
+            {
+                id: 3,
+                icon: '🗄️',
+                title: 'Configuration PostgreSQL',
+                description: 'Connexion et initialisation de la base de données',
+                status: 'active',
+                duration: '3m 42s'
+            },
+            {
+                id: 4,
+                icon: '⚛️',
+                title: 'Génération Next.js',
+                description: 'Création des composants React et pages',
+                status: 'pending',
+                duration: '-'
+            },
+            {
+                id: 5,
+                icon: '🎨',
+                title: 'Intégration UI/UX',
+                description: 'Application des styles et thèmes',
+                status: 'pending',
+                duration: '-'
+            },
+            {
+                id: 6,
+                icon: '🔗',
+                title: 'API et Routes',
+                description: 'Configuration des endpoints et middleware',
+                status: 'pending',
+                duration: '-'
+            },
+            {
+                id: 7,
+                icon: '🧪',
+                title: 'Tests automatisés',
+                description: 'Exécution des tests unitaires et E2E',
+                status: 'pending',
+                duration: '-'
+            },
+            {
+                id: 8,
+                icon: '🚀',
+                title: 'Finalisation',
+                description: 'Optimisation et préparation au déploiement',
+                status: 'pending',
+                duration: '-'
+            }
+        ];
+
+        function initializeDashboard() {
+            renderSteps();
+            connectWebSocket();
+            startStatsUpdater();
+        }
+
+        function renderSteps() {
+            const container = document.getElementById('steps-container');
+            container.innerHTML = steps.map(step => createStepElement(step)).join('');
+        }
+
+        function createStepElement(step) {
+            return `
+                <div class="step-item ${step.status}" id="step-${step.id}">
+                    <div class="step-icon">
+                        ${step.status === 'active' ? '⚙️' : step.icon}
+                    </div>
+                    <div class="step-content">
+                        <div class="step-title">${step.title}</div>
+                        <div class="step-description">${step.description}</div>
+                        <div class="step-details">
+                            <div class="step-time">${step.duration}</div>
+                            <div class="step-status status-${step.status}">
+                                ${getStatusText(step.status)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getStatusText(status) {
+            const texts = {
+                'completed': '✅ Terminé',
+                'active': '🔄 En cours',
+                'pending': '⏳ En attente',
+                'error': '❌ Erreur'
+            };
+            return texts[status] || 'Inconnu';
+        }
+
+        function connectWebSocket() {
+            try {
+                ws = new WebSocket('ws://localhost:3001');
+                
+                ws.onopen = function() {
+                    addLog('✅ Connexion WebSocket établie', 'success');
+                    ws.send(JSON.stringify({ type: 'request-status' }));
+                };
+                
+                ws.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    handleWebSocketMessage(data);
+                };
+                
+                ws.onclose = function() {
+                    addLog('❌ Connexion WebSocket fermée', 'error');
+                    setTimeout(connectWebSocket, 5000);
+                };
+                
+                ws.onerror = function(error) {
+                    addLog('❌ Erreur WebSocket: ' + error.message, 'error');
+                };
+            } catch (error) {
+                addLog('❌ Impossible de se connecter au serveur', 'error');
+            }
+        }
+
+        function handleWebSocketMessage(data) {
+            switch (data.type) {
+                case 'status-update':
+                    updateDashboard(data.data);
+                    break;
+                    
+                case 'step-progress':
+                    updateStepProgress(data.step, data.status);
+                    break;
+                    
+                case 'log-message':
+                    addLog(data.message, data.level);
+                    break;
+                    
+                case 'error-detected':
+                    handleError(data.error);
+                    break;
+            }
+        }
+
+        function updateDashboard(status) {
+            // Update header
+            document.getElementById('project-title').textContent = `🔥 Projet: ${status.projectName}`;
+            document.getElementById('project-status').textContent = 
+                `État: ${status.currentStep} - ${estimateProgress(status.currentStep)}%`;
+            
+            // Update overall progress
+            const progress = estimateProgress(status.currentStep);
+            document.getElementById('overall-progress').textContent = progress + '%';
+            
+            // Update stats
+            updateStats(status);
+        }
+
+        function updateStepProgress(stepId, status) {
+            const stepElement = document.getElementById(`step-${stepId}`);
+            if (stepElement) {
+                stepElement.className = `step-item ${status}`;
+                
+                // Update step data
+                const step = steps.find(s => s.id === stepId);
+                if (step) {
+                    step.status = status;
+                }
+                
+                // Re-render if needed
+                renderSteps();
+            }
+        }
+
+        function estimateProgress(step) {
+            const progressMap = {
+                'Analyse': 15,
+                'Génération schéma': 25,
+                'Configuration PostgreSQL': 33,
+                'Génération Next.js': 50,
+                'Intégration UI/UX': 65,
+                'API et Routes': 80,
+                'Tests automatisés': 90,
+                'Finalisation': 100
+            };
+            return progressMap[step] || 0;
+        }
+
+        function updateStats(status) {
+            const duration = status.duration || 0;
+            const elapsedMinutes = Math.floor(duration / (1000 * 60));
+            const elapsedSeconds = Math.floor((duration % (1000 * 60)) / 1000);
+            
+            document.getElementById('elapsed-time').textContent = 
+                `${String(elapsedMinutes).padStart(2, '0')}:${String(elapsedSeconds).padStart(2, '0')}`;
+            
+            // Simulate other stats updates
+            document.getElementById('files-processed').textContent = Math.floor(47 + Math.random() * 10);
+            document.getElementById('components-generated').textContent = Math.floor(12 + Math.random() * 5);
+        }
+
+        function startStatsUpdater() {
+            setInterval(() => {
+                // Simulate real-time stats updates
+                if (projectData.status === 'running') {
+                    const currentFiles = parseInt(document.getElementById('files-processed').textContent);
+                    const currentComponents = parseInt(document.getElementById('components-generated').textContent);
+                    
+                    if (Math.random() < 0.3) { // 30% chance to update
+                        document.getElementById('files-processed').textContent = currentFiles + 1;
+                    }
+                    
+                    if (Math.random() < 0.2) { // 20% chance to update
+                        document.getElementById('components-generated').textContent = currentComponents + 1;
+                    }
+                }
+            }, 2000);
+        }
+
+        function addLog(message, level = 'info') {
+            const logsContainer = document.getElementById('logs-container');
+            const logLine = document.createElement('div');
+            logLine.className = `log-line ${level}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            logLine.textContent = `[${timestamp}] ${message}`;
+            
+            logsContainer.appendChild(logLine);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+            
+            // Limiter à 100 lignes
+            while (logsContainer.children.length > 100) {
+                logsContainer.removeChild(logsContainer.firstChild);
+            }
+        }
+
+        function handleError(error) {
+            addLog(`❌ ERREUR: ${error.message}`, 'error');
+            
+            // Update step to error state
+            if (error.step) {
+                updateStepProgress(error.step, 'error');
+            }
+            
+            showNotification(`Erreur détectée: ${error.message}`, 'error');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        // Action functions
+        function pauseProject() {
+            const pauseBtn = document.getElementById('pause-btn');
+            if (pauseBtn.textContent.includes('Pause')) {
+                pauseBtn.innerHTML = '▶️ Reprendre';
+                addLog('⏸️ Projet mis en pause', 'warning');
+                showNotification('Projet mis en pause', 'warning');
+            } else {
+                pauseBtn.innerHTML = '⏸️ Pause';
+                addLog('▶️ Projet repris', 'success');
+                showNotification('Projet repris', 'success');
+            }
+        }
+
+        function stopProject() {
+            if (confirm('Êtes-vous sûr de vouloir arrêter le projet ?')) {
+                addLog('⏹️ Arrêt du projet demandé', 'error');
+                showNotification('Projet arrêté', 'error');
+                
+                // Redirect to homepage after 2 seconds
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            }
+        }
+
+        function viewFiles() {
+            showNotification('Ouverture de l\'explorateur de fichiers...', 'info');
+            // Implementation: open file browser
+        }
+
+        function downloadProject() {
+            showNotification('Préparation du téléchargement...', 'info');
+            // Implementation: create and download zip
+        }
+
+        function openInVSCode() {
+            showNotification('Ouverture dans VS Code...', 'info');
+            // Implementation: open in VS Code
+        }
+
+        function viewLogs() {
+            showNotification('Export des logs en cours...', 'info');
+            // Implementation: export logs
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
+
+        // Simulate step progression for demo
+        setTimeout(() => {
+            updateStepProgress(3, 'completed');
+            updateStepProgress(4, 'active');
+            addLog('✅ Configuration PostgreSQL terminée', 'success');
+            addLog('🔄 Démarrage de la génération Next.js...', 'info');
+        }, 10000);
+
+        setTimeout(() => {
+            updateStepProgress(4, 'completed');
+            updateStepProgress(5, 'active');
+            addLog('✅ Génération Next.js terminée - 15 composants créés', 'success');
+            addLog('🎨 Application des styles UI/UX...', 'info');
+        }, 20000);
+    </script>
+</body>
+</html>

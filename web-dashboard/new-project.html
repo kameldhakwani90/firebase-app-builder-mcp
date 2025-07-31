@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 Firebase App Builder - Nouveau Projet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .step {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .step-number.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .step-number.completed {
+            background: #2196F3;
+            color: white;
+        }
+
+        .step-line {
+            width: 50px;
+            height: 2px;
+            background: #e0e0e0;
+            margin: 0 10px;
+        }
+
+        .step-line.completed {
+            background: #4CAF50;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            background: #fff;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .form-group.error input {
+            border-color: #f44336;
+        }
+
+        .error-message {
+            color: #f44336;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .form-group.error .error-message {
+            display: block;
+        }
+
+        .url-validation {
+            background: #f5f5f5;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .url-validation.show {
+            display: block;
+        }
+
+        .validation-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .validation-item.success {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .validation-item.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .validation-item.pending {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #6c757d, #5a6268);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .buttons-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .project-preview {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .preview-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .preview-label {
+            font-weight: 600;
+            color: #1976d2;
+        }
+
+        .preview-value {
+            color: #333;
+        }
+
+        .app-types-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .app-type-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .app-type-card:hover {
+            border-color: #4CAF50;
+            transform: translateY(-2px);
+        }
+
+        .app-type-card.selected {
+            border-color: #4CAF50;
+            background: #e8f5e8;
+        }
+
+        .app-type-emoji {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .app-type-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .app-type-desc {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-btn">← Retour à l'accueil</a>
+
+    <div class="container">
+        <div class="header">
+            <h1>➕ Nouveau Projet</h1>
+            <p>Créer une nouvelle application depuis Firebase Studio</p>
+        </div>
+
+        <div class="form-container">
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step-item">
+                    <div class="step-number active" id="step-1">1</div>
+                    <span>URL GitHub</span>
+                </div>
+                <div class="step-line" id="line-1"></div>
+                <div class="step-item">
+                    <div class="step-number" id="step-2">2</div>
+                    <span>Configuration</span>
+                </div>
+                <div class="step-line" id="line-2"></div>
+                <div class="step-item">
+                    <div class="step-number" id="step-3">3</div>
+                    <span>Validation</span>
+                </div>
+            </div>
+
+            <!-- Step 1: GitHub URL -->
+            <div class="step active" id="step-1-content">
+                <h2>🔗 URL du projet Firebase Studio</h2>
+                <p style="color: #666; margin-bottom: 25px;">
+                    Entrez l'URL GitHub de votre projet Firebase Studio que vous souhaitez migrer.
+                </p>
+
+                <div class="form-group" id="github-url-group">
+                    <label for="github-url">URL GitHub *</label>
+                    <input 
+                        type="url" 
+                        id="github-url" 
+                        placeholder="https://github.com/username/project-name"
+                        oninput="validateGitHubUrl()"
+                    >
+                    <div class="error-message" id="github-url-error"></div>
+                </div>
+
+                <div class="url-validation" id="url-validation">
+                    <h4 style="margin-bottom: 15px;">🔍 Validation automatique</h4>
+                    <div class="validation-item pending" id="validation-url">
+                        <span class="loading" style="margin-right: 10px;"></span>
+                        Vérification de l'URL...
+                    </div>
+                    <div class="validation-item pending" id="validation-access">
+                        <span class="loading" style="margin-right: 10px;"></span>
+                        Vérification de l'accès au repository...
+                    </div>
+                    <div class="validation-item pending" id="validation-firebase">
+                        <span class="loading" style="margin-right: 10px;"></span>
+                        Détection des fichiers Firebase...
+                    </div>
+                </div>
+
+                <div class="buttons-group">
+                    <div></div>
+                    <button class="btn btn-primary" onclick="nextStep()" id="next-step-1" disabled>
+                        Suivant →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Configuration -->
+            <div class="step" id="step-2-content">
+                <h2>⚙️ Configuration du projet</h2>
+                <p style="color: #666; margin-bottom: 25px;">
+                    Personnalisez les paramètres de votre nouvelle application.
+                </p>
+
+                <div class="form-group">
+                    <label for="project-name">Nom du projet *</label>
+                    <input 
+                        type="text" 
+                        id="project-name" 
+                        placeholder="mon-super-projet"
+                        pattern="[a-z0-9-]+"
+                        title="Utilisez uniquement des lettres minuscules, chiffres et tirets"
+                    >
+                    <small style="color: #666;">Nom technique utilisé pour les dossiers et la base de données</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="project-display-name">Nom d'affichage</label>
+                    <input type="text" id="project-display-name" placeholder="Mon Super Projet">
+                    <small style="color: #666;">Nom affiché dans l'interface utilisateur</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Type d'application *</label>
+                    <div class="app-types-grid">
+                        <div class="app-type-card" onclick="selectAppType('ecommerce')">
+                            <div class="app-type-emoji">🛒</div>
+                            <div class="app-type-name">E-commerce</div>
+                            <div class="app-type-desc">Boutique en ligne</div>
+                        </div>
+                        <div class="app-type-card" onclick="selectAppType('booking')">
+                            <div class="app-type-emoji">📅</div>
+                            <div class="app-type-name">Réservation</div>
+                            <div class="app-type-desc">Système de booking</div>
+                        </div>
+                        <div class="app-type-card" onclick="selectAppType('social')">
+                            <div class="app-type-emoji">👥</div>
+                            <div class="app-type-name">Social</div>
+                            <div class="app-type-desc">Réseau social</div>
+                        </div>
+                        <div class="app-type-card" onclick="selectAppType('blog')">
+                            <div class="app-type-emoji">📝</div>
+                            <div class="app-type-name">Blog</div>
+                            <div class="app-type-desc">Site de contenu</div>
+                        </div>
+                        <div class="app-type-card" onclick="selectAppType('crm')">
+                            <div class="app-type-emoji">📊</div>
+                            <div class="app-type-name">CRM</div>
+                            <div class="app-type-desc">Gestion clients</div>
+                        </div>
+                        <div class="app-type-card" onclick="selectAppType('custom')">
+                            <div class="app-type-emoji">🎯</div>
+                            <div class="app-type-name">Personnalisé</div>
+                            <div class="app-type-desc">Application sur mesure</div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="app-type" value="">
+                </div>
+
+                <div class="form-group">
+                    <label for="local-port">Port de développement *</label>
+                    <input 
+                        type="number" 
+                        id="local-port" 
+                        value="3000" 
+                        min="3000" 
+                        max="9999"
+                        placeholder="3000"
+                        oninput="checkPortAvailability()"
+                    >
+                    <small style="color: #666;">Port sur lequel l'application tournera en local</small>
+                    <div id="port-status" style="margin-top: 8px; font-size: 0.9em;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Action si le projet existe *</label>
+                    <div style="display: flex; gap: 15px; margin-top: 10px;">
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="radio" name="project-action" value="new" checked style="margin-right: 8px;">
+                            🆕 Nouveau projet
+                        </label>
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="radio" name="project-action" value="continue" style="margin-right: 8px;">
+                            ▶️ Continuer existant
+                        </label>
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="radio" name="project-action" value="overwrite" style="margin-right: 8px;">
+                            🔄 Écraser existant
+                        </label>
+                    </div>
+                    <small style="color: #666; display: block; margin-top: 8px;">
+                        Que faire si un projet avec ce nom existe déjà ?
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description (optionnel)</label>
+                    <textarea 
+                        id="description" 
+                        rows="3" 
+                        placeholder="Décrivez brièvement votre projet..."
+                    ></textarea>
+                </div>
+
+                <div class="buttons-group">
+                    <button class="btn btn-secondary" onclick="previousStep()">
+                        ← Précédent
+                    </button>
+                    <button class="btn btn-primary" onclick="nextStep()" id="next-step-2" disabled>
+                        Suivant →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Validation -->
+            <div class="step" id="step-3-content">
+                <h2>✅ Validation et lancement</h2>
+                <p style="color: #666; margin-bottom: 25px;">
+                    Vérifiez les informations avant de lancer la création de votre projet.
+                </p>
+
+                <div class="project-preview">
+                    <h3 style="margin-bottom: 20px; color: #1976d2;">📋 Récapitulatif du projet</h3>
+                    <div class="preview-item">
+                        <div class="preview-label">URL GitHub:</div>
+                        <div class="preview-value" id="preview-github-url">-</div>
+                    </div>
+                    <div class="preview-item">
+                        <div class="preview-label">Nom du projet:</div>
+                        <div class="preview-value" id="preview-project-name">-</div>
+                    </div>
+                    <div class="preview-item">
+                        <div class="preview-label">Nom d'affichage:</div>
+                        <div class="preview-value" id="preview-display-name">-</div>
+                    </div>
+                    <div class="preview-item">
+                        <div class="preview-label">Type d'application:</div>
+                        <div class="preview-value" id="preview-app-type">-</div>
+                    </div>
+                    <div class="preview-item">
+                        <div class="preview-label">Port local:</div>
+                        <div class="preview-value" id="preview-port">-</div>
+                    </div>
+                    <div class="preview-item">
+                        <div class="preview-label">Action:</div>
+                        <div class="preview-value" id="preview-action">-</div>
+                    </div>
+                    <div class="preview-item">
+                        <div class="preview-label">Description:</div>
+                        <div class="preview-value" id="preview-description">-</div>
+                    </div>
+                </div>
+
+                <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 10px; padding: 20px; margin: 20px 0;">
+                    <h4 style="color: #856404; margin-bottom: 10px;">⚠️ Information importante</h4>
+                    <p style="color: #856404; margin-bottom: 10px;">
+                        Le processus de création peut prendre plusieurs minutes selon la complexité du projet.
+                    </p>
+                    <ul style="color: #856404; margin-left: 20px;">
+                        <li>Analyse automatique du code Firebase</li>
+                        <li>Génération des composants Next.js</li>
+                        <li>Configuration de la base de données PostgreSQL</li>
+                        <li>Tests automatisés</li>
+                    </ul>
+                </div>
+
+                <div class="buttons-group">
+                    <button class="btn btn-secondary" onclick="previousStep()">
+                        ← Précédent
+                    </button>
+                    <button class="btn btn-primary" onclick="createProject()" id="create-project-btn">
+                        🚀 Créer le projet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        let validationData = {};
+        let selectedAppType = '';
+
+        function nextStep() {
+            if (currentStep < 3) {
+                if (currentStep === 1 && !validateStep1()) return;
+                if (currentStep === 2 && !validateStep2()) return;
+
+                // Hide current step
+                document.getElementById(`step-${currentStep}-content`).classList.remove('active');
+                document.getElementById(`step-${currentStep}`).classList.remove('active');
+                document.getElementById(`step-${currentStep}`).classList.add('completed');
+                document.getElementById(`line-${currentStep}`).classList.add('completed');
+
+                currentStep++;
+
+                // Show next step
+                document.getElementById(`step-${currentStep}-content`).classList.add('active');
+                document.getElementById(`step-${currentStep}`).classList.add('active');
+
+                if (currentStep === 3) {
+                    updatePreview();
+                }
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                // Hide current step
+                document.getElementById(`step-${currentStep}-content`).classList.remove('active');
+                document.getElementById(`step-${currentStep}`).classList.remove('active');
+
+                currentStep--;
+
+                // Show previous step
+                document.getElementById(`step-${currentStep}-content`).classList.add('active');
+                document.getElementById(`step-${currentStep}`).classList.remove('completed');
+                document.getElementById(`step-${currentStep}`).classList.add('active');
+                document.getElementById(`line-${currentStep}`).classList.remove('completed');
+            }
+        }
+
+        function validateStep1() {
+            const url = document.getElementById('github-url').value;
+            return url && validationData.isValid;
+        }
+
+        function validateStep2() {
+            const projectName = document.getElementById('project-name').value;
+            const appType = document.getElementById('app-type').value;
+            
+            if (!projectName || !appType) {
+                alert('Veuillez remplir tous les champs obligatoires');
+                return false;
+            }
+
+            if (!/^[a-z0-9-]+$/.test(projectName)) {
+                alert('Le nom de projet doit contenir uniquement des lettres minuscules, chiffres et tirets');
+                return false;
+            }
+
+            return true;
+        }
+
+        function validateGitHubUrl() {
+            const url = document.getElementById('github-url').value;
+            const urlGroup = document.getElementById('github-url-group');
+            const validation = document.getElementById('url-validation');
+            const nextBtn = document.getElementById('next-step-1');
+            
+            if (!url) {
+                validation.classList.remove('show');
+                nextBtn.disabled = true;
+                return;
+            }
+
+            // Basic URL validation
+            if (!url.match(/^https:\/\/github\.com\/[\w-]+\/[\w-]+$/)) {
+                urlGroup.classList.add('error');
+                document.getElementById('github-url-error').textContent = 
+                    'Format d\'URL invalide. Utilisez: https://github.com/username/project-name';
+                validation.classList.remove('show');
+                nextBtn.disabled = true;
+                return;
+            }
+
+            urlGroup.classList.remove('error');
+            validation.classList.add('show');
+            
+            // Simulate validation process
+            setTimeout(() => {
+                updateValidationItem('validation-url', 'success', '✅ URL valide');
+                
+                setTimeout(() => {
+                    updateValidationItem('validation-access', 'success', '✅ Repository accessible');
+                    
+                    setTimeout(() => {
+                        updateValidationItem('validation-firebase', 'success', '✅ Projet Firebase détecté');
+                        validationData.isValid = true;
+                        nextBtn.disabled = false;
+                    }, 1000);
+                }, 1000);
+            }, 1000);
+        }
+
+        function updateValidationItem(id, status, text) {
+            const item = document.getElementById(id);
+            item.className = `validation-item ${status}`;
+            item.innerHTML = text;
+        }
+
+        function selectAppType(type) {
+            // Remove previous selection
+            document.querySelectorAll('.app-type-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Add selection to clicked card
+            event.target.closest('.app-type-card').classList.add('selected');
+            
+            selectedAppType = type;
+            document.getElementById('app-type').value = type;
+            document.getElementById('next-step-2').disabled = false;
+
+            // Auto-fill project name if empty
+            const projectNameInput = document.getElementById('project-name');
+            if (!projectNameInput.value) {
+                const url = document.getElementById('github-url').value;
+                if (url) {
+                    const projectName = url.split('/').pop().replace(/[^a-z0-9-]/gi, '-').toLowerCase();
+                    projectNameInput.value = projectName;
+                }
+            }
+        }
+
+        function updatePreview() {
+            document.getElementById('preview-github-url').textContent = 
+                document.getElementById('github-url').value;
+            document.getElementById('preview-project-name').textContent = 
+                document.getElementById('project-name').value;
+            document.getElementById('preview-display-name').textContent = 
+                document.getElementById('project-display-name').value || 'Non spécifié';
+            
+            const appTypeLabels = {
+                'ecommerce': '🛒 E-commerce',
+                'booking': '📅 Réservation',
+                'social': '👥 Social',
+                'blog': '📝 Blog',
+                'crm': '📊 CRM',
+                'custom': '🎯 Personnalisé'
+            };
+            document.getElementById('preview-app-type').textContent = 
+                appTypeLabels[selectedAppType] || 'Non spécifié';
+            
+            document.getElementById('preview-description').textContent = 
+                document.getElementById('description').value || 'Non spécifiée';
+            
+            // Nouvelles informations
+            document.getElementById('preview-port').textContent = 
+                document.getElementById('local-port').value || '3000';
+                
+            const actionLabels = {
+                'new': '🆕 Nouveau projet',
+                'continue': '▶️ Continuer existant',
+                'overwrite': '🔄 Écraser existant'
+            };
+            const selectedAction = document.querySelector('input[name="project-action"]:checked').value;
+            document.getElementById('preview-action').textContent = 
+                actionLabels[selectedAction] || 'Non spécifié';
+        }
+
+        function checkPortAvailability() {
+            const port = document.getElementById('local-port').value;
+            const portStatus = document.getElementById('port-status');
+            
+            if (!port || port < 3000 || port > 9999) {
+                portStatus.innerHTML = '<span style="color: #f44336;">⚠️ Port invalide (3000-9999)</span>';
+                return;
+            }
+
+            portStatus.innerHTML = '<span style="color: #FF9800;">🔍 Vérification du port...</span>';
+            
+            // API call to check port
+            fetch(`/api/check-port/${port}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.available) {
+                        portStatus.innerHTML = '<span style="color: #4CAF50;">✅ Port disponible</span>';
+                    } else {
+                        portStatus.innerHTML = '<span style="color: #f44336;">❌ Port occupé - Choisissez un autre</span>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking port:', error);
+                    portStatus.innerHTML = '<span style="color: #FF9800;">⚠️ Impossible de vérifier le port</span>';
+                });
+        }
+
+        function createProject() {
+            const createBtn = document.getElementById('create-project-btn');
+            createBtn.disabled = true;
+            createBtn.innerHTML = '<span class="loading"></span> Création en cours...';
+
+            const projectAction = document.querySelector('input[name="project-action"]:checked').value;
+            
+            const projectData = {
+                githubUrl: document.getElementById('github-url').value,
+                projectName: document.getElementById('project-name').value,
+                displayName: document.getElementById('project-display-name').value,
+                appType: selectedAppType,
+                description: document.getElementById('description').value,
+                localPort: parseInt(document.getElementById('local-port').value),
+                projectAction: projectAction
+            };
+
+            // Validation du port
+            if (!projectData.localPort || projectData.localPort < 3000 || projectData.localPort > 9999) {
+                alert('Veuillez choisir un port valide entre 3000 et 9999');
+                createBtn.disabled = false;
+                createBtn.innerHTML = '🚀 Créer le projet';
+                return;
+            }
+
+            // API call to create project
+            fetch('/api/project/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(projectData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Projet créé avec succès !');
+                    window.location.href = `/project/${data.projectName}`;
+                } else {
+                    alert('Erreur lors de la création: ' + data.error);
+                    createBtn.disabled = false;
+                    createBtn.innerHTML = '🚀 Créer le projet';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Erreur de communication');
+                createBtn.disabled = false;
+                createBtn.innerHTML = '🚀 Créer le projet';
+            });
+        }
+
+        // Auto-generate project name from GitHub URL
+        document.getElementById('github-url').addEventListener('input', function() {
+            const url = this.value;
+            const projectNameInput = document.getElementById('project-name');
+            
+            if (url && !projectNameInput.value) {
+                const match = url.match(/github\.com\/[\w-]+\/([\w-]+)/);
+                if (match) {
+                    projectNameInput.value = match[1].toLowerCase().replace(/[^a-z0-9-]/g, '-');
+                }
+            }
+        });
+
+        // Validation en temps réel pour le nom de projet
+        document.getElementById('project-name').addEventListener('input', function() {
+            const value = this.value;
+            const isValid = /^[a-z0-9-]+$/.test(value);
+            
+            if (value && !isValid) {
+                this.style.borderColor = '#f44336';
+            } else {
+                this.style.borderColor = '#e0e0e0';
+            }
+        });
+    </script>
+</body>
+</html>
