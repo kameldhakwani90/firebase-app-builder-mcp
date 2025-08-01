@@ -1,35 +1,78 @@
-# 🚀 Firebase App Builder Agent V2.0
+# 🔥 Firebase App Builder MCP - v2.5.1
 
-**Agent MCP ultra-intelligent avec Claude AI pour migrer n'importe quel projet Firebase Studio vers une application Next.js complète avec interface temps réel stylée**
-
-![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
-![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-green.svg)
+[![Version](https://img.shields.io/badge/version-2.5.1-blue.svg)](https://github.com/kameldhakwani90/firebase-app-builder-mcp)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![MCP](https://img.shields.io/badge/MCP-Compatible-purple.svg)](https://modelcontextprotocol.io)
+[![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-green.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)
 
-## ✨ Nouveautés V2.0 - 100% Générique !
+**Agent MCP intelligent pour migrer automatiquement vos projets Next.js vers PostgreSQL + Prisma avec interface web avancée**
 
-🎯 **BREAKTHROUGH**: L'agent s'adapte maintenant automatiquement à **N'IMPORTE QUEL** projet Firebase Studio !
+## 🚀 Nouveautés Version 2.5.1 - Interface Web Révolutionnée !
 
-- 🧠 **IA Adaptative**: Détection automatique du domaine métier (e-commerce, booking, social, CRM, blog, etc.)
-- 🔍 **Analyse Intelligente**: Extraction des rôles, modèles et fonctionnalités depuis le code réel
-- 🎨 **Interface Ultra-Stylée**: Dashboard temps réel avec ASCII art et barres de progression
-- 🤖 **Claude Integration**: Consultation AI à chaque étape pour une migration parfaite
-- 🎭 **Multi-Domaine**: E-commerce, Réservation, Social, CRM, Blog, Marketplace... et plus !
+### ✨ Interface Web Complète
+- **🌐 Interface web avancée** sur `http://localhost:3000`
+- **📝 Zone de description projet** pour analyses intelligentes
+- **🔍 Test connexion PostgreSQL réel** avec validation
+- **📊 Popup de suivi en temps réel** avec notifications fichiers
+- **✅ Validation formulaires avancée** avec indicateurs visuels
+- **🔄 Synchronisation bidirectionnelle** avec Claude Code
 
-## 🎬 Démonstration
+### 🎯 Améliorations Majeures
+- **Message d'accueil intelligent** avec instructions interface web
+- **Validation en temps réel** des champs obligatoires
+- **Test PostgreSQL authentique** avec messages d'erreur précis
+- **Suivi des fichiers créés** avec notifications visuelles
+- **Synchronisation complète** : toutes les actions web visibles dans Claude Code
+
+## 📦 Installation
 
 ```bash
-npx @kameldhakwani90/firebase-app-builder-mcp migrate https://github.com/mon-utilisateur/mon-projet-firebase-studio
+# Installation globale
+npm install -g @kameldhakwani90/firebase-app-builder-mcp
+
+# Ou depuis GitHub (dernière version)
+npm install -g git+https://github.com/kameldhakwani90/firebase-app-builder-mcp.git
 ```
 
-**Résultat :**
-- ✅ Analyse automatique du domaine métier
-- ✅ Détection des rôles réels (pas de hardcode admin/host/client)
-- ✅ Génération de l'architecture adaptée
-- ✅ API REST sécurisées pour chaque modèle détecté
-- ✅ Tests E2E Playwright complets
-- ✅ Application Next.js prête en production !
+## 🔧 Configuration Claude Code
+
+Ajoutez à votre configuration MCP dans `~/.config/claude-desktop/mcp_servers.json` :
+
+```json
+{
+  "mcpServers": {
+    "firebase-app-builder": {
+      "command": "firebase-app-builder-mcp",
+      "args": []
+    }
+  }
+}
+```
+
+## 🚀 Utilisation
+
+### Via Claude Code (Recommandé)
+```bash
+# Lister les projets (lance l'interface web automatiquement)
+/projects
+
+# Migrer un nouveau projet
+/migrate https://github.com/username/my-project
+
+# Continuer un projet existant
+/continue my-project
+
+# Voir le statut détaillé
+/status my-project
+```
+
+### Via Interface Web 🌐
+1. **Lancez l'agent** depuis Claude Code
+2. **Ouvrez** http://localhost:3000 dans votre navigateur
+3. **Configurez** votre projet avec la description intelligente
+4. **Testez** la connexion PostgreSQL
+5. **Démarrez** la migration avec suivi temps réel
 
 ## 🏗️ Architecture Générique
 

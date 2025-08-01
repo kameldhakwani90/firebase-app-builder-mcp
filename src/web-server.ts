@@ -4,8 +4,11 @@ import { WebSocketServer } from 'ws';
 import path from 'path';
 import fs from 'fs-extra';
 import chalk from 'chalk';
-import { spawn } from 'child_process';
+import { spawn, exec } from 'child_process';
+import { promisify } from 'util';
 import { logger } from './utils/logger.js';
+
+const execAsync = promisify(exec);
 
 export interface WebServerConfig {
   port: number;
@@ -36,6 +39,8 @@ export class WebServer {
   private config: WebServerConfig;
   private projectConfig?: ProjectConfig;
   private bridgeDir: string;
+  private logWatchers: Map<string, any> = new Map();
+  private lastLogPositions: Map<string, number> = new Map();
 
   constructor(config: WebServerConfig) {
     this.config = config;
@@ -132,6 +137,38 @@ export class WebServer {
       res.json({ success: true });
     });
 
+    // API pour test de connexion PostgreSQL réel (avec vraie validation)
+    this.app.post('/api/postgres-test-real', async (req, res) => {
+      try {
+        const config = req.body;
+        
+        // Validation des paramètres
+        if (!config.host || !config.username || !config.password || !config.database) {
+          return res.json({
+            success: false,
+            error: 'Paramètres de connexion manquants (host, username, password, database)'
+          });
+        }
+
+        // Test de connexion réel avec pg
+        const testResult = await this.testPostgresConnection(config);
+        
+        this.broadcast({
+          type: 'postgres-test-real-result',
+          result: testResult
+        });
+
+        res.json(testResult);
+      } catch (error) {
+        logger.error('Erreur test connexion PostgreSQL', error);
+        const errorResult = {
+          success: false,
+          error: error instanceof Error ? error.message : 'Erreur inconnue'
+        };
+        res.json(errorResult);
+      }
+    });
+
     // API pour les confirmations Claude Code
     this.app.post('/api/claude-confirmation', (req, res) => {
       const { confirmed, requestId, response } = req.body;
@@ -155,6 +192,36 @@ export class WebServer {
       });
 
       res.json({ success: true });
+    });
+
+    // API pour synchronisation avec Claude Code
+    this.app.post('/api/sync-claude', (req, res) => {
+      try {
+        const { action, data, message } = req.body;
+        
+        // Créer un fichier de synchronisation pour Claude Code
+        const syncData = {
+          timestamp: Date.now(),
+          action,
+          data,
+          message,
+          fromWebInterface: true
+        };
+
+        const syncPath = path.join(this.bridgeDir, `claude-sync-${Date.now()}.json`);
+        fs.writeJsonSync(syncPath, syncData);
+
+        this.broadcast({
+          type: 'claude-sync-sent',
+          data: syncData
+        });
+
+        logger.info('Synchronisation Claude Code envoyée', syncData);
+        res.json({ success: true });
+      } catch (error) {
+        logger.error('Erreur synchronisation Claude', error);
+        res.status(500).json({ success: false, error: error.message });
+      }
     });
 
     // API pour programmer une reprise
@@ -377,6 +444,355 @@ export class WebServer {
         res.status(500).json({ success: false, error: error.message });
       }
     });
+
+    // API pour arrêter/pauser un agent
+    this.app.post('/api/stop-agent', async (req, res) => {
+      try {
+        const { action } = req.body; // 'stop' ou 'pause'
+        
+        // Lire l'état actuel de l'agent
+        const agentStatePath = path.join(process.cwd(), '..', 'firebase-migrations', 'agent-state.json');
+        
+        if (fs.existsSync(agentStatePath)) {
+          const agentState = fs.readJsonSync(agentStatePath);
+          
+          if (agentState.isRunning && agentState.pid) {
+            // Essayer d'arrêter le processus
+            try {
+              process.kill(agentState.pid, 'SIGTERM');
+              
+              // Mettre à jour l'état
+              agentState.isRunning = false;
+              agentState.lastHeartbeat = Date.now();
+              agentState.stoppedAt = Date.now();
+              agentState.stoppedBy = action;
+              
+              fs.writeJsonSync(agentStatePath, agentState);
+              
+              this.broadcast({
+                type: 'agent-stopped',
+                data: {
+                  projectName: agentState.projectName,
+                  action,
+                  timestamp: Date.now()
+                }
+              });
+              
+              logger.info(`Agent ${action} avec succès`, { pid: agentState.pid });
+              res.json({ success: true, message: `Agent ${action} avec succès` });
+            } catch (killError) {
+              // Le processus n'existe peut-être plus
+              agentState.isRunning = false;
+              agentState.lastHeartbeat = Date.now();
+              fs.writeJsonSync(agentStatePath, agentState);
+              
+              res.json({ success: true, message: `Agent déjà arrêté ou processus introuvable` });
+            }
+          } else {
+            res.json({ success: false, error: 'Aucun agent en cours d\'exécution' });
+          }
+        } else {
+          res.json({ success: false, error: 'Fichier d\'état agent introuvable' });
+        }
+      } catch (error) {
+        logger.error('Erreur arrêt agent', error);
+        res.status(500).json({ success: false, error: error.message });
+      }
+    });
+
+    // API pour obtenir les détails complets d'un projet
+    this.app.get('/api/project-details/:name', async (req, res) => {
+      try {
+        const { name } = req.params;
+        
+        // Lire la liste des projets
+        const projectsPath = path.join(process.cwd(), '..', 'firebase-migrations', 'projects.json');
+        const agentStatePath = path.join(process.cwd(), '..', 'firebase-migrations', 'agent-state.json');
+        const logsPath = path.join(process.cwd(), '..', 'firebase-migrations', 'logs');
+        
+        let project = null;
+        let agentState = null;
+        let logs = [];
+        
+        // Charger le projet
+        if (fs.existsSync(projectsPath)) {
+          const projects = fs.readJsonSync(projectsPath);
+          project = projects.find((p: any) => p.name === name);
+        }
+        
+        // Charger l'état de l'agent
+        if (fs.existsSync(agentStatePath)) {
+          const state = fs.readJsonSync(agentStatePath);
+          if (state.projectName === name) {
+            agentState = state;
+          }
+        }
+        
+        // Charger les logs récents
+        if (fs.existsSync(logsPath)) {
+          const logFiles = fs.readdirSync(logsPath)
+            .filter(f => f.includes(name) || f.includes('agent'))
+            .sort()
+            .slice(-3); // 3 fichiers les plus récents
+          
+          for (const logFile of logFiles) {
+            try {
+              const logContent = fs.readFileSync(path.join(logsPath, logFile), 'utf8');
+              const recentLines = logContent.split('\n').slice(-20); // 20 dernières lignes
+              logs.push({
+                file: logFile,
+                content: recentLines.join('\n')
+              });
+            } catch (logError) {
+              // Ignorer les erreurs de lecture de logs
+            }
+          }
+        }
+        
+        const details = {
+          project,
+          agentState,
+          logs,
+          isRunning: agentState?.isRunning || false,
+          progress: agentState ? this.calculateProgress(agentState.currentStep) : 0
+        };
+        
+        res.json({ success: true, details });
+      } catch (error) {
+        logger.error('Erreur détails projet', error);
+        res.status(500).json({ success: false, error: error.message });
+      }
+    });
+
+    // API pour redémarrer un projet
+    this.app.post('/api/restart-project', async (req, res) => {
+      try {
+        const { projectName } = req.body;
+        
+        // Créer un signal de redémarrage
+        const restartData = {
+          action: 'restart',
+          projectName,
+          timestamp: Date.now()
+        };
+
+        const restartPath = path.join(this.bridgeDir, 'restart-project.json');
+        fs.writeJsonSync(restartPath, restartData);
+
+        this.broadcast({
+          type: 'project-restart-requested',
+          data: restartData
+        });
+
+        logger.info('Redémarrage projet demandé', restartData);
+        res.json({ success: true, message: `Redémarrage du projet ${projectName} demandé` });
+      } catch (error) {
+        logger.error('Erreur redémarrage projet', error);
+        res.status(500).json({ success: false, error: error.message });
+      }
+    });
+
+    // API pour démarrer le streaming des logs
+    this.app.post('/api/start-log-stream/:projectName', (req, res) => {
+      try {
+        const { projectName } = req.params;
+        this.startLogStreaming(projectName);
+        res.json({ success: true, message: `Streaming logs démarré pour ${projectName}` });
+      } catch (error) {
+        logger.error('Erreur démarrage streaming logs', error);
+        res.status(500).json({ success: false, error: error.message });
+      }
+    });
+
+    // API pour arrêter le streaming des logs
+    this.app.post('/api/stop-log-stream/:projectName', (req, res) => {
+      try {
+        const { projectName } = req.params;
+        this.stopLogStreaming(projectName);
+        res.json({ success: true, message: `Streaming logs arrêté pour ${projectName}` });
+      } catch (error) {
+        logger.error('Erreur arrêt streaming logs', error);
+        res.status(500).json({ success: false, error: error.message });
+      }
+    });
+
+    // API pour vérifier si un agent est bloqué
+    this.app.get('/api/check-agent-status', (req, res) => {
+      try {
+        const agentStatePath = path.join(process.cwd(), '..', 'firebase-migrations', 'agent-state.json');
+        
+        if (fs.existsSync(agentStatePath)) {
+          const agentState = fs.readJsonSync(agentStatePath);
+          const now = Date.now();
+          const lastHeartbeat = agentState.lastHeartbeat || 0;
+          const timeSinceHeartbeat = now - lastHeartbeat;
+          
+          // Considérer comme bloqué si pas de heartbeat depuis 2 minutes
+          const isBlocked = timeSinceHeartbeat > 120000;
+          const isStuck = timeSinceHeartbeat > 300000; // 5 minutes = vraiment bloqué
+          
+          let status = 'active';
+          if (isStuck) {
+            status = 'stuck';
+          } else if (isBlocked) {
+            status = 'blocked';
+          } else if (!agentState.isRunning) {
+            status = 'stopped';
+          }
+
+          const statusInfo = {
+            status,
+            isRunning: agentState.isRunning,
+            timeSinceHeartbeat,
+            projectName: agentState.projectName,
+            currentStep: agentState.currentStep,
+            pid: agentState.pid,
+            message: this.getStatusMessage(status, timeSinceHeartbeat)
+          };
+
+          res.json({ success: true, agentStatus: statusInfo });
+        } else {
+          res.json({ 
+            success: true, 
+            agentStatus: { 
+              status: 'no_agent', 
+              message: 'Aucun agent en cours' 
+            }
+          });
+        }
+      } catch (error) {
+        logger.error('Erreur vérification statut agent', error);
+        res.status(500).json({ success: false, error: error.message });
+      }
+    });
+  }
+
+  private calculateProgress(currentStep: string | undefined): number {
+    const stepProgress: { [key: string]: number } = {
+      'initialization': 5,
+      'analysis': 15,
+      'super-workflow': 35,
+      'database': 50,
+      'api': 70,
+      'tests': 85,
+      'finalization': 100
+    };
+    
+    return stepProgress[currentStep || ''] || 0;
+  }
+
+  private getStatusMessage(status: string, timeSinceHeartbeat: number): string {
+    const minutes = Math.floor(timeSinceHeartbeat / 60000);
+    const seconds = Math.floor((timeSinceHeartbeat % 60000) / 1000);
+    
+    switch (status) {
+      case 'active':
+        return `Agent actif (dernière activité: ${seconds}s)`;
+      case 'blocked':
+        return `⚠️ Agent possiblement bloqué (${minutes}m ${seconds}s sans activité)`;
+      case 'stuck':
+        return `❌ Agent bloqué (${minutes}m sans activité)`;
+      case 'stopped':
+        return 'Agent arrêté';
+      default:
+        return 'Statut inconnu';
+    }
+  }
+
+  private startLogStreaming(projectName: string) {
+    // Arrêter le streaming précédent s'il existe
+    this.stopLogStreaming(projectName);
+    
+    const logsPath = path.join(process.cwd(), '..', 'firebase-migrations', 'logs');
+    const today = new Date().toISOString().split('T')[0];
+    const logFile = path.join(logsPath, `agent-${today}.log`);
+    
+    if (!fs.existsSync(logFile)) {
+      logger.warn(`Fichier de log introuvable: ${logFile}`);
+      return;
+    }
+
+    // Obtenir la position actuelle du fichier
+    const stats = fs.statSync(logFile);
+    let lastPosition = this.lastLogPositions.get(projectName) || stats.size;
+    
+    // Watcher pour surveiller les modifications du fichier
+    const watcher = fs.watchFile(logFile, { interval: 1000 }, (curr, prev) => {
+      if (curr.size > lastPosition) {
+        // Nouveau contenu disponible
+        const newContent = this.readLogChunk(logFile, lastPosition, curr.size);
+        if (newContent) {
+          this.broadcastLogUpdate(projectName, newContent);
+          lastPosition = curr.size;
+          this.lastLogPositions.set(projectName, lastPosition);
+        }
+      }
+    });
+    
+    this.logWatchers.set(projectName, watcher);
+    logger.info(`Streaming logs démarré pour: ${projectName}`);
+  }
+
+  private stopLogStreaming(projectName: string) {
+    const watcher = this.logWatchers.get(projectName);
+    if (watcher) {
+      fs.unwatchFile(watcher);
+      this.logWatchers.delete(projectName);
+      logger.info(`Streaming logs arrêté pour: ${projectName}`);
+    }
+  }
+
+  private readLogChunk(filePath: string, start: number, end: number): string | null {
+    try {
+      const buffer = Buffer.alloc(end - start);
+      const fd = fs.openSync(filePath, 'r');
+      fs.readSync(fd, buffer, 0, end - start, start);
+      fs.closeSync(fd);
+      return buffer.toString('utf8');
+    } catch (error) {
+      logger.error('Erreur lecture chunk log', error);
+      return null;
+    }
+  }
+
+  private broadcastLogUpdate(projectName: string, logContent: string) {
+    const lines = logContent.split('\n').filter(line => line.trim());
+    
+    for (const line of lines) {
+      try {
+        // Essayer de parser comme JSON pour extraire les infos
+        const logEntry = JSON.parse(line);
+        
+        const broadcastData = {
+          type: 'log-update',
+          projectName,
+          data: {
+            timestamp: logEntry.timestamp || new Date().toISOString(),
+            level: logEntry.level || 'INFO',
+            message: logEntry.message || line,
+            step: logEntry.step || 'Unknown',
+            projectName: logEntry.projectName || projectName,
+            raw: line
+          }
+        };
+        
+        this.broadcast(broadcastData);
+      } catch (parseError) {
+        // Si ce n'est pas du JSON, envoyer tel quel
+        this.broadcast({
+          type: 'log-update',
+          projectName,
+          data: {
+            timestamp: new Date().toISOString(),
+            level: 'INFO',
+            message: line,
+            step: 'Raw',
+            projectName,
+            raw: line
+          }
+        });
+      }
+    }
   }
 
   private setupWebSocket() {
@@ -690,7 +1106,34 @@ export class WebServer {
     return basePorts.filter(port => port !== this.config.port);
   }
 
+  private async killPortProcess(port: number): Promise<void> {
+    try {
+      const { stdout } = await execAsync(`netstat -ano | findstr :${port}`);
+      const lines = stdout.split('\n').filter(line => line.includes('LISTENING'));
+      
+      for (const line of lines) {
+        const parts = line.trim().split(/\s+/);
+        const pid = parts[parts.length - 1];
+        
+        if (pid && !isNaN(parseInt(pid))) {
+          try {
+            await execAsync(`taskkill //F //PID ${pid}`);
+            logger.info(`Processus ${pid} utilisant le port ${port} terminé`);
+          } catch (error) {
+            logger.warn(`Impossible de terminer le processus ${pid}`, error);
+          }
+        }
+      }
+    } catch (error) {
+      // Port probablement libre
+      logger.debug(`Port ${port} déjà libre`);
+    }
+  }
+
   async start(): Promise<string> {
+    // Libérer le port automatiquement
+    await this.killPortProcess(this.config.port);
+    
     // Créer le répertoire bridge
     await fs.ensureDir(this.bridgeDir);
 
@@ -727,5 +1170,73 @@ export class WebServer {
 
   getProjectConfig(): ProjectConfig | undefined {
     return this.projectConfig;
+  }
+
+  private async testPostgresConnection(config: any): Promise<{success: boolean, error?: string, message?: string}> {
+    try {
+      // Essayer d'importer pg de manière dynamique
+      const { Client } = await import('pg');
+      
+      const client = new Client({
+        host: config.host,
+        port: config.port || 5432,
+        user: config.username,
+        password: config.password,
+        database: config.database,
+        connectionTimeoutMillis: 5000, // 5 secondes timeout
+      });
+
+      await client.connect();
+      
+      // Test simple query
+      const result = await client.query('SELECT NOW() as current_time');
+      await client.end();
+
+      logger.info('Test connexion PostgreSQL réussi', {
+        host: config.host,
+        database: config.database,
+        currentTime: result.rows[0]?.current_time
+      });
+
+      return {
+        success: true,
+        message: `Connexion réussie à ${config.host}:${config.port || 5432}/${config.database}`
+      };
+
+    } catch (error: any) {
+      logger.error('Échec test connexion PostgreSQL', {
+        host: config.host,
+        database: config.database,
+        error: error.message
+      });
+
+      // Messages d'erreur plus explicites
+      if (error.code === 'ECONNREFUSED') {
+        return {
+          success: false,
+          error: `Impossible de se connecter à ${config.host}:${config.port || 5432}. Vérifiez que PostgreSQL est démarré.`
+        };
+      } else if (error.code === 'ENOTFOUND') {
+        return {
+          success: false,
+          error: `Hôte ${config.host} introuvable. Vérifiez l'adresse.`
+        };
+      } else if (error.message.includes('authentication failed')) {
+        return {
+          success: false,
+          error: 'Authentification échouée. Vérifiez le nom d\'utilisateur et mot de passe.'
+        };
+      } else if (error.message.includes('database') && error.message.includes('does not exist')) {
+        return {
+          success: false,
+          error: `La base de données "${config.database}" n'existe pas.`
+        };
+      } else {
+        return {
+          success: false,
+          error: error.message || 'Erreur de connexion inconnue'
+        };
+      }
+    }
   }
 }

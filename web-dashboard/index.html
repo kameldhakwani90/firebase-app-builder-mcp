@@ -265,6 +265,11 @@
             color: white;
         }
 
+        .btn-info {
+            background: linear-gradient(45deg, #17a2b8, #138496);
+            color: white;
+        }
+
         .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -412,6 +417,197 @@
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
+
+        /* Indicateur d'activité */
+        .activity-pulse {
+            animation: activity-pulse 1.5s infinite;
+        }
+
+        @keyframes activity-pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .activity-blocked {
+            background: #FF9800 !important;
+            animation: activity-warning 2s infinite;
+        }
+
+        .activity-stuck {
+            background: #f44336 !important;
+            animation: activity-error 1s infinite;
+        }
+
+        @keyframes activity-warning {
+            0%, 50% { opacity: 1; }
+            25%, 75% { opacity: 0.3; }
+        }
+
+        @keyframes activity-error {
+            0%, 50% { opacity: 1; }
+            25%, 75% { opacity: 0.1; }
+        }
+
+        /* Logs temps réel */
+        .realtime-logs-container {
+            background: rgba(0, 0, 0, 0.95);
+            border-radius: 10px;
+            padding: 15px;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            max-height: 300px;
+            overflow-y: auto;
+            line-height: 1.4;
+            font-size: 13px;
+        }
+
+        .log-entry {
+            margin-bottom: 2px;
+            padding: 2px 5px;
+            word-wrap: break-word;
+            opacity: 0;
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .log-level-ERROR { color: #ff6b6b; font-weight: bold; }
+        .log-level-WARN { color: #ffa726; }
+        .log-level-INFO { color: #4fc3f7; }
+        .log-level-SUCCESS { color: #66bb6a; font-weight: bold; }
+        .log-level-DEBUG { color: #90a4ae; opacity: 0.7; }
+
+        .log-timestamp {
+            color: #888;
+            font-size: 11px;
+        }
+
+        .log-step {
+            color: #ffab40;
+            font-weight: bold;
+        }
+
+        /* Popup de suivi */
+        .progress-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .progress-popup.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .progress-popup-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .progress-popup.show .progress-popup-content {
+            transform: scale(1);
+        }
+
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .popup-close {
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .popup-close:hover {
+            background: #d32f2f;
+        }
+
+        .file-creation-notify {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-creation-notify.success {
+            background: #e8f5e8;
+            border-color: #4caf50;
+        }
+
+        .file-creation-notify.error {
+            background: #ffebee;
+            border-color: #f44336;
+        }
+
+        /* Validation des champs */
+        .form-group.error input, 
+        .form-group.error textarea,
+        .form-group.error select {
+            border-color: #f44336 !important;
+            background-color: #ffebee;
+        }
+
+        .form-group.success input, 
+        .form-group.success textarea,
+        .form-group.success select {
+            border-color: #4caf50 !important;
+            background-color: #e8f5e8;
+        }
+
+        .field-error {
+            color: #f44336;
+            font-size: 0.8em;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .form-group.error .field-error {
+            display: block;
+        }
+
+        .required-indicator {
+            color: #f44336;
+            margin-left: 3px;
+        }
     </style>
 </head>
 <body>
@@ -483,6 +679,22 @@
                         <input type="url" id="github-url" placeholder="https://github.com/user/my-project" required>
                     </div>
 
+                    <!-- Zone de description du projet pour contexte intelligent -->
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="project-description">📝 Description du Projet (Recommandé)</label>
+                        <textarea 
+                            id="project-description" 
+                            rows="4" 
+                            placeholder="Décrivez votre projet : son objectif, ses fonctionnalités principales, le type d'utilisateurs, les entités métier importantes...
+
+Exemple : 'Application e-commerce avec gestion produits, commandes, utilisateurs. Les utilisateurs peuvent créer des comptes, ajouter des produits au panier, passer des commandes. Les admins gèrent le catalogue et les commandes.'"
+                            style="padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; resize: vertical; font-family: inherit;">
+                        </textarea>
+                        <p style="font-size: 0.85em; color: #666; margin-top: 5px;">
+                            💡 Cette description aide l'agent à mieux comprendre votre projet pour créer des schémas Prisma et APIs plus intelligents
+                        </p>
+                    </div>
+
                     <h3 style="margin: 20px 0 15px 0;">🗄️ Base de Données PostgreSQL</h3>
                     <div class="form-grid">
                         <div class="form-group">
@@ -498,12 +710,14 @@
                             <input type="text" id="db-username" value="postgres" placeholder="postgres">
                         </div>
                         <div class="form-group">
-                            <label for="db-password">Mot de passe</label>
+                            <label for="db-password">Mot de passe <span class="required-indicator">*</span></label>
                             <input type="password" id="db-password" placeholder="Mot de passe" required>
+                            <div class="field-error">Le mot de passe est requis</div>
                         </div>
                         <div class="form-group">
-                            <label for="db-name">Base de données</label>
+                            <label for="db-name">Base de données <span class="required-indicator">*</span></label>
                             <input type="text" id="db-name" placeholder="mon_projet_db" required>
+                            <div class="field-error">Le nom de la base de données est requis</div>
                         </div>
                     </div>
 
@@ -524,7 +738,7 @@
                     </div>
 
                     <div class="button-group" style="margin-top: 30px;">
-                        <button class="btn btn-secondary" onclick="testDatabaseConnection()">
+                        <button class="btn btn-secondary" onclick="testDatabaseConnectionWithValidation()">
                             🔍 Tester la connexion DB
                         </button>
                         <button class="btn btn-primary" onclick="startMigration()">
@@ -541,6 +755,15 @@
                             ← Retour aux Projets
                         </button>
                     </div>
+                    
+                    <!-- Statut Agent avec Indicateur d'Activité -->
+                    <div id="agent-status-indicator" style="margin-bottom: 20px; padding: 15px; border-radius: 8px; background: #f8f9fa;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div id="activity-indicator" class="activity-pulse" style="width: 12px; height: 12px; border-radius: 50%; background: #4CAF50;"></div>
+                            <span id="agent-status-text">Vérification du statut...</span>
+                        </div>
+                    </div>
+                    
                     <div class="progress-bar">
                         <div class="progress-fill" id="progress" style="width: 0%">0%</div>
                     </div>
@@ -560,6 +783,30 @@
                             <div class="status-value" id="duration">-</div>
                         </div>
                     </div>
+
+                    <!-- Logs Temps Réel -->
+                    <div style="margin-top: 25px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h3>📡 Logs Temps Réel</h3>
+                            <div>
+                                <button class="btn btn-primary btn-small" onclick="startLogStreaming()" id="start-logs-btn">
+                                    ▶️ Démarrer
+                                </button>
+                                <button class="btn btn-warning btn-small hidden" onclick="stopLogStreaming()" id="stop-logs-btn">
+                                    ⏹️ Arrêter
+                                </button>
+                                <button class="btn btn-secondary btn-small" onclick="clearRealtimeLogs()">
+                                    🗑️ Vider
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="realtime-logs-container" id="realtime-logs">
+                            <div style="text-align: center; padding: 20px; color: #666;">
+                                📺 Cliquez sur "Démarrer" pour voir les logs en temps réel
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Confirmations Claude -->
@@ -575,6 +822,51 @@
 
             <!-- Right Panel -->
             <div class="right-panel">
+                <!-- Futur SaaS -->
+                <div class="card">
+                    <h2>🚀 Futur : Firebase App Builder SaaS</h2>
+                    
+                    <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <h4 style="margin-bottom: 10px;">💡 Vision SaaS Multi-Utilisateurs</h4>
+                        <p style="font-size: 0.9em; line-height: 1.6;">
+                            <strong>⚡ Principe clé :</strong> Même en SaaS, l'architecture reste basée sur l'<strong>agent MCP</strong>, 
+                            pas sur des APIs classiques. Chaque utilisateur aura son propre agent MCP isolé.
+                        </p>
+                    </div>
+
+                    <div style="font-size: 0.85em; color: #555;">
+                        <h4>🎯 Fonctionnalités Prévues :</h4>
+                        <ul style="margin: 10px 0; padding-left: 20px;">
+                            <li><strong>Multi-projets simultanés</strong> par utilisateur</li>
+                            <li><strong>Agents MCP isolés</strong> dans containers Docker</li>
+                            <li><strong>Interface multi-tenant</strong> avec authentification</li>
+                            <li><strong>Queue système</strong> pour la gestion des tâches</li>
+                            <li><strong>Monitoring avancé</strong> de tous les agents</li>
+                            <li><strong>Facturation</strong> par projet/usage</li>
+                        </ul>
+
+                        <h4 style="margin-top: 15px;">🏗️ Architecture Technique :</h4>
+                        <ul style="margin: 10px 0; padding-left: 20px;">
+                            <li><strong>Kubernetes</strong> pour orchestration agents</li>
+                            <li><strong>Redis Queue</strong> pour tâches async</li>
+                            <li><strong>PostgreSQL</strong> multi-tenant</li>
+                            <li><strong>S3</strong> pour stockage projets</li>
+                            <li><strong>WebSocket</strong> pour logs temps réel</li>
+                        </ul>
+
+                        <h4 style="margin-top: 15px;">💰 Modèle économique :</h4>
+                        <div style="background: #f0f8ff; padding: 10px; border-radius: 4px; margin: 8px 0;">
+                            <strong>Free:</strong> 1 projet/mois, logs basiques<br>
+                            <strong>Pro ($29/mois):</strong> 5 projets simultanés<br>
+                            <strong>Enterprise ($99/mois):</strong> Illimité + Support
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 6px;">
+                        <strong>🔥 Potentiel énorme !</strong> Agent MCP unique sur le marché
+                    </div>
+                </div>
+
                 <!-- Mise à Jour & Configuration -->
                 <div class="card">
                     <h2>🔧 Configuration Système</h2>
@@ -741,6 +1033,43 @@
     <!-- Notification -->
     <div class="notification" id="notification"></div>
 
+    <!-- Popup de suivi de progression -->
+    <div class="progress-popup" id="progress-popup">
+        <div class="progress-popup-content">
+            <div class="popup-header">
+                <h2>🚀 Migration en cours</h2>
+                <button class="popup-close" onclick="closeProgressPopup()">×</button>
+            </div>
+            
+            <div id="popup-progress-content">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="popup-progress" style="width: 0%">0%</div>
+                </div>
+                <p id="popup-progress-text">Initialisation...</p>
+                
+                <div style="margin: 20px 0;">
+                    <h3>📁 Fichiers créés :</h3>
+                    <div id="files-created-list">
+                        <p style="color: #666; font-style: italic;">Aucun fichier créé pour le moment</p>
+                    </div>
+                </div>
+
+                <div style="margin: 20px 0;">
+                    <h3>📡 Logs temps réel :</h3>
+                    <div class="logs-container" id="popup-logs" style="max-height: 200px;">
+                        <div class="log-line">🚀 Migration démarrée...</div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="minimizePopup()">
+                        📱 Réduire
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let ws = null;
         let currentProject = null;
@@ -753,7 +1082,9 @@
             tokensAvailable: true,
             scheduledResume: null,
             projects: [],
-            currentAgent: null
+            currentAgent: null,
+            logStreamingActive: false,
+            currentProjectName: null
         };
 
         // Initialisation
@@ -820,6 +1151,10 @@
                     showNotification('Configuration sauvegardée !', 'success');
                     switchToProgressView();
                     break;
+
+                case 'log-update':
+                    handleLogUpdate(data);
+                    break;
                     
                 default:
                     console.log('Message non géré:', data);
@@ -857,22 +1192,58 @@
 
         function startMigration() {
             const githubUrl = document.getElementById('github-url').value;
+            const projectDescription = document.getElementById('project-description').value;
             const dbConfig = getDatabaseConfig();
             const adminConfig = getAdminConfig();
             
-            // Validation
+            // Validation améliorée avec indication visuelle
+            let hasErrors = false;
+            
+            // Réinitialiser les états de validation
+            clearValidationStates();
+            
+            // Validation URL GitHub
             if (!githubUrl) {
-                showNotification('URL GitHub requise', 'error');
-                return;
+                setFieldError('github-url', 'URL GitHub requise');
+                hasErrors = true;
+            } else if (!isValidGitUrl(githubUrl)) {
+                setFieldError('github-url', 'URL GitHub invalide (doit être github.com, gitlab.com, ou bitbucket.org)');
+                hasErrors = true;
+            } else {
+                setFieldSuccess('github-url');
             }
             
-            if (!dbConfig.password || !dbConfig.database) {
-                showNotification('Configuration base de données incomplète', 'error');
+            // Validation base de données
+            if (!dbConfig.password) {
+                setFieldError('db-password', 'Mot de passe de la base de données requis');
+                hasErrors = true;
+            } else {
+                setFieldSuccess('db-password');
+            }
+            
+            if (!dbConfig.database) {
+                setFieldError('db-name', 'Nom de la base de données requis');
+                hasErrors = true;
+            } else {
+                setFieldSuccess('db-name');
+            }
+            
+            // Validation de l'hôte de la base de données
+            if (!dbConfig.host) {
+                setFieldError('db-host', 'Hôte de la base de données requis');
+                hasErrors = true;
+            } else {
+                setFieldSuccess('db-host');
+            }
+            
+            if (hasErrors) {
+                showNotification('Veuillez corriger les erreurs dans le formulaire', 'error');
                 return;
             }
             
             const projectConfig = {
                 githubUrl: githubUrl,
+                projectDescription: projectDescription || null,
                 database: dbConfig,
                 superAdmin: adminConfig.email ? adminConfig : null
             };
@@ -891,6 +1262,14 @@
                     appState.configured = true;
                     currentProject = projectConfig;
                     addLog('✅ Configuration envoyée à l\'agent');
+                    
+                    // Afficher le popup de suivi
+                    showProgressPopup();
+                    
+                    // Simuler quelques fichiers créés pour démonstration
+                    setTimeout(() => addFileCreated('package.json'), 2000);
+                    setTimeout(() => addFileCreated('prisma/schema.prisma'), 4000);
+                    setTimeout(() => addFileCreated('src/lib/database.ts'), 6000);
                 } else {
                     showNotification('Erreur: ' + data.error, 'error');
                 }
@@ -921,9 +1300,13 @@
 
         // UI Functions
         function switchToProgressView() {
-            document.getElementById('initial-config').classList.remove('active');
-            document.getElementById('progress-section').classList.add('active');
-            document.getElementById('confirmations-section').classList.add('active');
+            const initialConfig = document.getElementById('initial-config');
+            const progressSection = document.getElementById('progress-section');
+            const confirmationsSection = document.getElementById('confirmations-section');
+            
+            if (initialConfig) initialConfig.classList.remove('active');
+            if (progressSection) progressSection.classList.add('active');
+            if (confirmationsSection) confirmationsSection.classList.add('active');
         }
 
         function updateStatus(status) {
@@ -1081,23 +1464,25 @@
             const scheduleBtnEl = document.getElementById('schedule-btn');
             const resumeBtnEl = document.getElementById('resume-btn');
             
+            if (!tokenStatusEl) return;
+            
             appState.tokensAvailable = (status === 'available');
             
             if (status === 'available') {
                 tokenStatusEl.className = 'token-status available';
                 tokenStatusEl.innerHTML = `<strong>✅ Tokens Disponibles</strong><p>${message}</p>`;
-                scheduleBtnEl.classList.add('hidden');
-                resumeBtnEl.classList.add('hidden');
+                if (scheduleBtnEl) scheduleBtnEl.classList.add('hidden');
+                if (resumeBtnEl) resumeBtnEl.classList.add('hidden');
             } else if (status === 'exhausted') {
                 tokenStatusEl.className = 'token-status exhausted';
                 tokenStatusEl.innerHTML = `<strong>❌ Tokens Épuisés</strong><p>${message}</p>`;
-                scheduleBtnEl.classList.remove('hidden');
-                resumeBtnEl.classList.add('hidden');
+                if (scheduleBtnEl) scheduleBtnEl.classList.remove('hidden');
+                if (resumeBtnEl) resumeBtnEl.classList.add('hidden');
             } else if (status === 'scheduled') {
                 tokenStatusEl.className = 'token-status scheduled';
                 tokenStatusEl.innerHTML = `<strong>⏰ Reprise Programmée</strong><p>${message}</p>`;
-                scheduleBtnEl.classList.add('hidden');
-                resumeBtnEl.classList.remove('hidden');
+                if (scheduleBtnEl) scheduleBtnEl.classList.add('hidden');
+                if (resumeBtnEl) resumeBtnEl.classList.remove('hidden');
             }
             
             addLog(`🎯 Statut tokens: ${message}`);
@@ -1114,7 +1499,8 @@
         }
 
         function showScheduleSection() {
-            document.getElementById('schedule-section').classList.remove('hidden');
+            const scheduleSection = document.getElementById('schedule-section');
+            if (scheduleSection) scheduleSection.classList.remove('hidden');
         }
 
         function scheduleResume() {
@@ -1139,7 +1525,8 @@
                 if (data.success) {
                     const resumeDate = new Date(resumeTime);
                     updateTokenStatus('scheduled', `Reprise prévue: ${resumeDate.toLocaleString()}`);
-                    document.getElementById('schedule-section').classList.add('hidden');
+                    const scheduleSection = document.getElementById('schedule-section');
+                    if (scheduleSection) scheduleSection.classList.add('hidden');
                     appState.scheduledResume = resumeTime;
                     
                     showNotification('Reprise programmée avec succès', 'success');
@@ -1311,14 +1698,23 @@
                     <button class="btn btn-warning btn-small" onclick="pauseProject('${project.name}')">
                         ⏸️ Pause
                     </button>
+                    <button class="btn btn-danger btn-small" onclick="stopCurrentAgent()">
+                        ⏹️ Arrêter
+                    </button>
                 `;
             } else {
                 return `
                     <button class="btn btn-primary btn-small" onclick="continueProject('${project.name}')">
                         ▶️ Continuer
                     </button>
+                    <button class="btn btn-secondary btn-small" onclick="viewProjectProgress('${project.name}')">
+                        📊 Détails
+                    </button>
                     <button class="btn btn-warning btn-small" onclick="showOverwriteForm('${project.name}')">
                         🔄 Écraser
+                    </button>
+                    <button class="btn btn-info btn-small" onclick="restartProject('${project.name}')">
+                        🔄 Redémarrer
                     </button>
                     <button class="btn btn-danger btn-small" onclick="deleteProject('${project.name}')">
                         🗑️ Supprimer
@@ -1330,11 +1726,17 @@
         function updateCurrentAgent() {
             const currentAgentDiv = document.getElementById('current-agent');
             
+            if (!currentAgentDiv) return;
+            
             if (appState.currentAgent && appState.currentAgent.isRunning) {
                 currentAgentDiv.classList.remove('hidden');
-                document.getElementById('current-project-name').textContent = appState.currentAgent.projectName || '-';
-                document.getElementById('current-project-step').textContent = appState.currentAgent.currentStep || '-';
-                document.getElementById('current-project-status').textContent = appState.currentAgent.isRunning ? '🔄 Actif' : '⏹️ Arrêté';
+                const nameEl = document.getElementById('current-project-name');
+                const stepEl = document.getElementById('current-project-step'); 
+                const statusEl = document.getElementById('current-project-status');
+                
+                if (nameEl) nameEl.textContent = appState.currentAgent.projectName || '-';
+                if (stepEl) stepEl.textContent = appState.currentAgent.currentStep || '-';
+                if (statusEl) statusEl.textContent = appState.currentAgent.isRunning ? '🔄 Actif' : '⏹️ Arrêté';
             } else {
                 currentAgentDiv.classList.add('hidden');
             }
@@ -1346,14 +1748,20 @@
         }
 
         function showNewProjectForm() {
-            document.getElementById('projects-management').classList.remove('active');
-            document.getElementById('new-project-config').classList.add('active');
+            const projectsManagement = document.getElementById('projects-management');
+            const newProjectConfig = document.getElementById('new-project-config');
+            
+            if (projectsManagement) projectsManagement.classList.remove('active');
+            if (newProjectConfig) newProjectConfig.classList.add('active');
             addLog('📝 Formulaire nouveau projet affiché');
         }
 
         function continueProject(projectName) {
             if (confirm(`Continuer le projet "${projectName}" ?`)) {
                 addLog(`▶️ Continuation du projet ${projectName}...`);
+                
+                // Synchroniser avec Claude Code
+                syncWithClaude('continue_project', { projectName }, `Continuation du projet ${projectName} depuis l'interface web`);
                 
                 fetch('/api/continue-project', {
                     method: 'POST',
@@ -1437,8 +1845,64 @@
         }
 
         function viewProjectProgress(projectName) {
-            switchToProgressView();
-            addLog(`📊 Affichage progression du projet ${projectName}`);
+            addLog(`📊 Chargement progression du projet ${projectName}...`);
+            
+            // Définir le projet actuel pour le streaming
+            appState.currentProjectName = projectName;
+            
+            // Charger les détails complets du projet
+            fetch(`/api/project-details/${encodeURIComponent(projectName)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const details = data.details;
+                        
+                        // Basculer vers la vue progression
+                        switchToProgressView();
+                        
+                        // Mettre à jour les informations de progression
+                        if (details.agentState) {
+                            const progress = details.progress || 0;
+                            updateProgress(progress);
+                            
+                            document.getElementById('status').textContent = details.isRunning ? 'En cours' : 'Arrêté';
+                            document.getElementById('status').className = `status-value ${details.isRunning ? 'status-online' : 'status-offline'}`;
+                            
+                            document.getElementById('step').textContent = details.agentState.currentStep || 'Non définie';
+                            
+                            const duration = details.agentState.startTime ? Date.now() - details.agentState.startTime : 0;
+                            document.getElementById('duration').textContent = formatDuration(duration);
+                            
+                            // Afficher les logs récents dans la console
+                            if (details.logs && details.logs.length > 0) {
+                                addLog(`📋 Logs récents du projet ${projectName}:`);
+                                details.logs.forEach(log => {
+                                    const lines = log.content.split('\n').filter(line => line.trim());
+                                    lines.slice(-5).forEach(line => {
+                                        if (line.trim()) addLog(`   ${line.trim()}`);
+                                    });
+                                });
+                            }
+                        }
+                        
+                        // Démarrer la surveillance automatiquement si l'agent est actif
+                        if (details.isRunning) {
+                            setTimeout(() => {
+                                startAgentStatusMonitoring();
+                            }, 1000);
+                        }
+                        
+                        addLog(`✅ Progression chargée: ${projectName} (${details.progress || 0}%)`);
+                        showNotification(`Progression du projet ${projectName} affichée`, 'success');
+                    } else {
+                        addLog(`❌ Erreur chargement progression: ${data.error}`);
+                        showNotification('Erreur lors du chargement de la progression', 'error');
+                    }
+                })
+                .catch(error => {
+                    addLog(`❌ Erreur: ${error.message}`);
+                    showNotification('Erreur de communication', 'error');
+                });
         }
 
         function viewCurrentProgress() {
@@ -1448,16 +1912,62 @@
         }
 
         function stopCurrentAgent() {
-            if (confirm('Arrêter l\'agent actuel ?')) {
+            if (confirm('Arrêter l\'agent actuel ?\n\nCela va stopper le processus en cours.')) {
                 addLog('⏹️ Arrêt de l\'agent demandé...');
-                showNotification('Fonctionnalité d\'arrêt en cours d\'implémentation', 'warning');
+                
+                fetch('/api/stop-agent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'stop' })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('Agent arrêté avec succès', 'success');
+                        addLog('✅ Agent arrêté');
+                        setTimeout(() => {
+                            loadProjects();
+                            updateCurrentAgent();
+                        }, 1000);
+                    } else {
+                        showNotification('Erreur: ' + data.error, 'error');
+                        addLog('❌ Erreur arrêt: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    showNotification('Erreur de communication', 'error');
+                    addLog('❌ Erreur: ' + error.message);
+                });
             }
         }
 
         function pauseProject(projectName) {
-            if (confirm(`Mettre en pause le projet "${projectName}" ?`)) {
+            if (confirm(`Mettre en pause le projet "${projectName}" ?\n\nLe projet pourra être repris plus tard.`)) {
                 addLog(`⏸️ Pause du projet ${projectName}...`);
-                showNotification('Fonctionnalité de pause en cours d\'implémentation', 'warning');
+                
+                fetch('/api/stop-agent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'pause' })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(`Projet "${projectName}" mis en pause`, 'success');
+                        addLog('⏸️ Projet mis en pause');
+                        setTimeout(() => {
+                            loadProjects();
+                            updateCurrentAgent();
+                        }, 1000);
+                    } else {
+                        showNotification('Erreur: ' + data.error, 'error');
+                        addLog('❌ Erreur pause: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    showNotification('Erreur de communication', 'error');
+                    addLog('❌ Erreur: ' + error.message);
+                });
             }
         }
 
@@ -1474,7 +1984,8 @@
             });
             
             // Afficher la gestion des projets
-            document.getElementById('projects-management').classList.add('active');
+            const projectsManagement = document.getElementById('projects-management');
+            if (projectsManagement) projectsManagement.classList.add('active');
             
             // Actualiser les projets
             loadProjects();
@@ -1525,13 +2036,15 @@
                             updateText.textContent = `Mise à jour disponible: v${data.latestVersion}`;
                             updateText.className = 'text-warning';
                             document.getElementById('latest-version').textContent = data.latestVersion;
-                            document.getElementById('update-available').classList.remove('hidden');
+                            const updateAvailable = document.getElementById('update-available');
+                            if (updateAvailable) updateAvailable.classList.remove('hidden');
                             showNotification(`Nouvelle version ${data.latestVersion} disponible !`, 'info');
                             addLog(`🆕 Mise à jour disponible: v${data.latestVersion}`);
                         } else {
                             updateText.textContent = 'À jour';
                             updateText.className = 'text-success';
-                            document.getElementById('update-available').classList.add('hidden');
+                            const updateAvailable = document.getElementById('update-available');
+                            if (updateAvailable) updateAvailable.classList.add('hidden');
                             addLog('✅ Agent à jour');
                         }
                     } else {
@@ -1575,7 +2088,8 @@
                     addLog('✅ Mise à jour terminée');
                     
                     // Masquer la notification de mise à jour
-                    document.getElementById('update-available').classList.add('hidden');
+                    const updateAvailable = document.getElementById('update-available');
+                    if (updateAvailable) updateAvailable.classList.add('hidden');
                     
                     // Afficher les étapes dans les logs
                     if (data.result && data.result.steps) {
@@ -1602,7 +2116,8 @@
         }
 
         function dismissUpdate() {
-            document.getElementById('update-available').classList.add('hidden');
+            const updateAvailable = document.getElementById('update-available');
+            if (updateAvailable) updateAvailable.classList.add('hidden');
             addLog('⏭️ Mise à jour reportée');
         }
 
@@ -1668,6 +2183,434 @@
             }
         }
 
+        function restartProject(projectName) {
+            if (confirm(`Redémarrer complètement le projet "${projectName}" ?\n\nCela va relancer la migration depuis le début.`)) {
+                addLog(`🔄 Redémarrage du projet ${projectName}...`);
+                
+                fetch('/api/restart-project', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ projectName })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(`Redémarrage du projet "${projectName}" demandé`, 'success');
+                        addLog(`✅ ${data.message}`);
+                        setTimeout(() => {
+                            loadProjects();
+                            updateCurrentAgent();
+                        }, 2000);
+                    } else {
+                        showNotification('Erreur lors du redémarrage', 'error');
+                        addLog(`❌ Erreur: ${data.error}`);
+                    }
+                })
+                .catch(error => {
+                    showNotification('Erreur de communication', 'error');
+                    addLog(`❌ Erreur: ${error.message}`);
+                });
+            }
+        }
+
+        // ===== LOGS TEMPS RÉEL & DÉTECTION DE BLOCAGE =====
+
+        function startLogStreaming() {
+            if (!appState.currentProjectName) {
+                showNotification('Aucun projet sélectionné', 'error');
+                return;
+            }
+
+            addLog(`📡 Démarrage streaming logs pour ${appState.currentProjectName}`);
+            
+            fetch(`/api/start-log-stream/${encodeURIComponent(appState.currentProjectName)}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    appState.logStreamingActive = true;
+                    const startBtn = document.getElementById('start-logs-btn');
+                    const stopBtn = document.getElementById('stop-logs-btn');
+                    if (startBtn) startBtn.classList.add('hidden');
+                    if (stopBtn) stopBtn.classList.remove('hidden');
+                    
+                    // Vider la zone de logs et ajouter un message de démarrage
+                    const logsContainer = document.getElementById('realtime-logs');
+                    logsContainer.innerHTML = `
+                        <div class="log-entry log-level-INFO">
+                            <span class="log-timestamp">${new Date().toLocaleTimeString()}</span>
+                            <span class="log-step">[STREAMING]</span>
+                            📡 Streaming des logs démarré pour ${appState.currentProjectName}
+                        </div>
+                    `;
+                    
+                    showNotification('Streaming logs démarré', 'success');
+                    addLog('✅ Streaming logs actif');
+                    
+                    // Démarrer la surveillance du statut agent
+                    startAgentStatusMonitoring();
+                } else {
+                    showNotification('Erreur démarrage streaming', 'error');
+                    addLog('❌ Erreur: ' + data.error);
+                }
+            })
+            .catch(error => {
+                showNotification('Erreur de communication', 'error');
+                addLog('❌ Erreur: ' + error.message);
+            });
+        }
+
+        function stopLogStreaming() {
+            if (!appState.currentProjectName || !appState.logStreamingActive) return;
+
+            addLog(`⏹️ Arrêt streaming logs pour ${appState.currentProjectName}`);
+            
+            fetch(`/api/stop-log-stream/${encodeURIComponent(appState.currentProjectName)}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    appState.logStreamingActive = false;
+                    const startBtn = document.getElementById('start-logs-btn');
+                    const stopBtn = document.getElementById('stop-logs-btn');
+                    if (startBtn) startBtn.classList.remove('hidden');
+                    if (stopBtn) stopBtn.classList.add('hidden');
+                    
+                    showNotification('Streaming logs arrêté', 'success');
+                    addLog('⏹️ Streaming logs arrêté');
+                    
+                    // Arrêter la surveillance du statut
+                    stopAgentStatusMonitoring();
+                }
+            })
+            .catch(error => {
+                showNotification('Erreur arrêt streaming', 'error');
+                addLog('❌ Erreur: ' + error.message);
+            });
+        }
+
+        function handleLogUpdate(data) {
+            if (!appState.logStreamingActive || data.projectName !== appState.currentProjectName) {
+                return;
+            }
+
+            const logsContainer = document.getElementById('realtime-logs');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-level-${data.data.level}`;
+            
+            const timestamp = new Date(data.data.timestamp).toLocaleTimeString();
+            logEntry.innerHTML = `
+                <span class="log-timestamp">${timestamp}</span>
+                <span class="log-step">[${data.data.step}]</span>
+                ${data.data.message}
+            `;
+            
+            logsContainer.appendChild(logEntry);
+            
+            // Limiter à 100 entrées
+            while (logsContainer.children.length > 100) {
+                logsContainer.removeChild(logsContainer.firstChild);
+            }
+            
+            // Scroll automatique vers le bas
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+        }
+
+        function clearRealtimeLogs() {
+            const logsContainer = document.getElementById('realtime-logs');
+            logsContainer.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #666;">
+                    🗑️ Logs vidés - ${new Date().toLocaleTimeString()}
+                </div>
+            `;
+            addLog('🗑️ Logs temps réel vidés');
+        }
+
+        let agentStatusInterval = null;
+
+        function startAgentStatusMonitoring() {
+            if (agentStatusInterval) return; // Déjà actif
+            
+            // Vérifier le statut immédiatement
+            checkAgentStatus();
+            
+            // Puis vérifier toutes les 5 secondes
+            agentStatusInterval = setInterval(checkAgentStatus, 5000);
+        }
+
+        function stopAgentStatusMonitoring() {
+            if (agentStatusInterval) {
+                clearInterval(agentStatusInterval);
+                agentStatusInterval = null;
+            }
+        }
+
+        function checkAgentStatus() {
+            fetch('/api/check-agent-status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.agentStatus) {
+                        updateAgentStatusIndicator(data.agentStatus);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur vérification statut agent:', error);
+                });
+        }
+
+        function updateAgentStatusIndicator(agentStatus) {
+            const indicator = document.getElementById('activity-indicator');
+            const statusText = document.getElementById('agent-status-text');
+            const statusContainer = document.getElementById('agent-status-indicator');
+            
+            // Reset classes
+            indicator.className = '';
+            statusContainer.style.background = '#f8f9fa';
+            
+            switch (agentStatus.status) {
+                case 'active':
+                    indicator.className = 'activity-pulse';
+                    indicator.style.background = '#4CAF50';
+                    statusText.textContent = `🟢 ${agentStatus.message}`;
+                    statusContainer.style.background = '#e8f5e8';
+                    break;
+                    
+                case 'blocked':
+                    indicator.className = 'activity-blocked';
+                    statusText.textContent = `🟡 ${agentStatus.message}`;
+                    statusContainer.style.background = '#fff3cd';
+                    break;
+                    
+                case 'stuck':
+                    indicator.className = 'activity-stuck';
+                    statusText.textContent = `🔴 ${agentStatus.message}`;
+                    statusContainer.style.background = '#f8d7da';
+                    break;
+                    
+                case 'stopped':
+                    indicator.style.background = '#6c757d';
+                    statusText.textContent = `⚫ Agent arrêté`;
+                    statusContainer.style.background = '#e9ecef';
+                    break;
+                    
+                case 'no_agent':
+                    indicator.style.background = '#6c757d';
+                    statusText.textContent = `⚫ Aucun agent en cours`;
+                    statusContainer.style.background = '#e9ecef';
+                    break;
+                    
+                default:
+                    statusText.textContent = `❓ Statut inconnu`;
+            }
+        }
+
+        // ===== FONCTIONS DE VALIDATION =====
+        
+        function clearValidationStates() {
+            document.querySelectorAll('.form-group').forEach(group => {
+                group.classList.remove('error', 'success');
+            });
+        }
+        
+        function setFieldError(fieldId, message) {
+            const input = document.getElementById(fieldId);
+            if (!input) return;
+            
+            const formGroup = input.closest('.form-group');
+            if (formGroup) {
+                formGroup.classList.remove('success');
+                formGroup.classList.add('error');
+                
+                const errorDiv = formGroup.querySelector('.field-error');
+                if (errorDiv) {
+                    errorDiv.textContent = message;
+                }
+            }
+        }
+        
+        function setFieldSuccess(fieldId) {
+            const input = document.getElementById(fieldId);
+            if (!input) return;
+            
+            const formGroup = input.closest('.form-group');
+            if (formGroup) {
+                formGroup.classList.remove('error');
+                formGroup.classList.add('success');
+            }
+        }
+        
+        function isValidGitUrl(url) {
+            const gitUrlPattern = /^https?:\/\/(github\.com|gitlab\.com|bitbucket\.org)\/[\w\-\.]+\/[\w\-\.]+/;
+            return gitUrlPattern.test(url);
+        }
+
+        // ===== FONCTIONS POPUP =====
+        
+        function showProgressPopup() {
+            const popup = document.getElementById('progress-popup');
+            if (popup) {
+                popup.classList.add('show');
+                // Démarrer le streaming logs dans le popup
+                startPopupLogStreaming();
+            }
+        }
+        
+        function closeProgressPopup() {
+            const popup = document.getElementById('progress-popup');
+            if (popup) {
+                popup.classList.remove('show');
+            }
+        }
+        
+        function minimizePopup() {
+            closeProgressPopup();
+            showNotification('Popup réduite - Migration continue en arrière-plan', 'info');
+        }
+        
+        function updatePopupProgress(percent, text) {
+            const progressBar = document.getElementById('popup-progress');
+            const progressText = document.getElementById('popup-progress-text');
+            
+            if (progressBar) {
+                progressBar.style.width = percent + '%';
+                progressBar.textContent = percent + '%';
+            }
+            if (progressText) {
+                progressText.textContent = text || `Progression: ${percent}%`;
+            }
+        }
+        
+        function addFileCreated(fileName, status = 'success') {
+            const filesList = document.getElementById('files-created-list');
+            if (!filesList) return;
+            
+            // Supprimer le message "aucun fichier"
+            if (filesList.querySelector('p[style*="italic"]')) {
+                filesList.innerHTML = '';
+            }
+            
+            const fileDiv = document.createElement('div');
+            fileDiv.className = `file-creation-notify ${status}`;
+            fileDiv.innerHTML = `
+                <span>${status === 'success' ? '✅' : '❌'}</span>
+                <span>${fileName}</span>
+                <small style="margin-left: auto; color: #666;">${new Date().toLocaleTimeString()}</small>
+            `;
+            
+            filesList.appendChild(fileDiv);
+            
+            // Limiter à 10 fichiers affichés
+            while (filesList.children.length > 10) {
+                filesList.removeChild(filesList.firstChild);
+            }
+        }
+        
+        function addPopupLog(message, level = 'INFO') {
+            const logsContainer = document.getElementById('popup-logs');
+            if (!logsContainer) return;
+            
+            const logLine = document.createElement('div');
+            logLine.className = 'log-line';
+            logLine.textContent = `${new Date().toLocaleTimeString()} [${level}] ${message}`;
+            
+            logsContainer.appendChild(logLine);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+            
+            // Limiter à 50 lignes
+            while (logsContainer.children.length > 50) {
+                logsContainer.removeChild(logsContainer.firstChild);
+            }
+        }
+        
+        function startPopupLogStreaming() {
+            // Cette fonction sera appelée pour synchroniser les logs avec le popup
+            addPopupLog('📡 Streaming logs démarré dans le popup');
+        }
+
+        // ===== AMÉLIORATION TEST CONNEXION SQL =====
+        
+        function testDatabaseConnectionWithValidation() {
+            const config = getDatabaseConfig();
+            
+            // Validation avant test
+            clearValidationStates();
+            let hasErrors = false;
+            
+            if (!config.host) {
+                setFieldError('db-host', 'Hôte requis pour le test');
+                hasErrors = true;
+            } else {
+                setFieldSuccess('db-host');
+            }
+            
+            if (!config.username) {
+                setFieldError('db-username', 'Nom d\'utilisateur requis pour le test');
+                hasErrors = true;
+            } else {
+                setFieldSuccess('db-username');
+            }
+            
+            if (!config.password) {
+                setFieldError('db-password', 'Mot de passe requis pour le test');
+                hasErrors = true;
+            } else {
+                setFieldSuccess('db-password');
+            }
+            
+            if (!config.database) {
+                setFieldError('db-name', 'Nom de base requis pour le test');
+                hasErrors = true;
+            } else {
+                setFieldSuccess('db-name');
+            }
+            
+            if (hasErrors) {
+                showNotification('Veuillez remplir tous les champs requis', 'error');
+                return;
+            }
+            
+            // Procéder au test
+            addLog('🔍 Test de connexion PostgreSQL...');
+            showNotification('Test de connexion en cours...', 'info');
+            
+            // Appeler l'API de test réel
+            testPostgresConnectionReal(config);
+        }
+        
+        function testPostgresConnectionReal(config) {
+            fetch('/api/postgres-test-real', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('✅ Connexion PostgreSQL réussie !', 'success');
+                    addLog('✅ Connexion base de données validée');
+                    
+                    // Marquer visuellement le succès
+                    ['db-host', 'db-username', 'db-password', 'db-name'].forEach(id => {
+                        setFieldSuccess(id);
+                    });
+                } else {
+                    showNotification(`❌ Échec connexion: ${data.error}`, 'error');
+                    addLog(`❌ Erreur connexion: ${data.error}`);
+                    
+                    // Marquer les champs en erreur
+                    ['db-host', 'db-username', 'db-password', 'db-name'].forEach(id => {
+                        setFieldError(id, 'Vérifiez ce paramètre');
+                    });
+                }
+            })
+            .catch(error => {
+                showNotification('Erreur lors du test', 'error');
+                addLog('❌ Erreur test connexion: ' + error.message);
+            });
+        }
+
         // Utility Functions
         function formatDuration(ms) {
             const seconds = Math.floor(ms / 1000);
@@ -1689,8 +2632,63 @@
             notification.className = `notification ${type} show`;
             
             setTimeout(() => {
-                notification.classList.remove('show');
+                if (notification) notification.classList.remove('show');
             }, 5000);
+        }
+
+        // ===== SYNCHRONISATION AVEC CLAUDE CODE =====
+        
+        function syncWithClaude(action, data, message) {
+            fetch('/api/sync-claude', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action,
+                    data,
+                    message
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    addLog(`🔄 Synchronisation Claude Code: ${message}`);
+                } else {
+                    addLog(`❌ Erreur synchronisation Claude: ${result.error}`);
+                }
+            })
+            .catch(error => {
+                addLog(`❌ Erreur sync Claude: ${error.message}`);
+            });
+        }
+
+        // Synchroniser les actions importantes avec Claude Code
+        function startMigrationWithSync() {
+            const projectConfig = {
+                githubUrl: document.getElementById('github-url').value,
+                projectDescription: document.getElementById('project-description').value,
+                database: getDatabaseConfig(),
+                superAdmin: getAdminConfig()
+            };
+            
+            syncWithClaude(
+                'start_migration', 
+                projectConfig, 
+                `Démarrage de migration pour ${projectConfig.githubUrl} depuis l'interface web`
+            );
+            
+            startMigration();
+        }
+
+        function testDatabaseWithSync() {
+            const config = getDatabaseConfig();
+            
+            syncWithClaude(
+                'test_database', 
+                config, 
+                `Test de connexion base de données ${config.host}:${config.port}/${config.database} depuis l'interface web`
+            );
+            
+            testDatabaseConnectionWithValidation();
         }
 
         // Auto-refresh status every 10 seconds

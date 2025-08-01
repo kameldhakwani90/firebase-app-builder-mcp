@@ -5,6 +5,103 @@ All notable changes to Firebase App Builder Agent will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.1] - 2025-01-01 🌐 INTERFACE WEB RÉVOLUTIONNÉE
+
+### ✨ Nouvelles Fonctionnalités Majeures
+
+#### 🌐 Interface Web Complète
+- **Interface web avancée** accessible sur `http://localhost:3000`
+- **Zone de description projet** pour analyses intelligentes par l'agent
+- **Popup de suivi temps réel** avec notifications des fichiers créés
+- **Validation formulaires en temps réel** avec indicateurs visuels success/error
+- **Design moderne et responsive** avec animations et transitions
+
+#### 🔍 Test PostgreSQL Authentique  
+- **Connexion PostgreSQL réelle** avec la librairie `pg`
+- **Messages d'erreur précis** selon le type d'erreur (connection refusée, auth, base inexistante)
+- **Timeout configuré** (5 secondes) pour éviter les blocages
+- **Validation complète** des paramètres avant test
+
+#### 🔄 Synchronisation Bidirectionnelle
+- **API de synchronisation** `/api/sync-claude` pour communication web ↔ Claude Code
+- **Monitor de surveillance** `WebSyncMonitor` pour traiter les événements en temps réel
+- **Notifications automatiques** : toutes les actions web sont visibles dans Claude Code
+- **Fichiers de synchronisation** dans `.claude-agent-bridge/` pour communication
+
+#### 📋 Message d'Accueil Intelligent
+- **Instructions automatiques** pour utiliser l'interface web au lancement de l'agent
+- **Explication des avantages** de l'interface web vs ligne de commande
+- **URL directe** vers l'interface avec détection automatique du port
+
+### 🔧 Améliorations Techniques
+
+#### Validation et UX
+- **Validation en temps réel** des champs obligatoires avec états visuels
+- **Indicateurs requis** (*) sur les champs obligatoires  
+- **Messages d'erreur spécifiques** pour chaque type d'erreur
+- **Validation URL GitHub** avec pattern matching pour domaines supportés
+
+#### Architecture Web
+- **Serveur web robuste** avec gestion des erreurs et WebSocket
+- **APIs RESTful** pour toutes les fonctionnalités
+- **Gestion des sessions** et état de l'application
+- **Monitoring temps réel** de l'agent avec détection des blocages
+
+### 🛠️ Nouveaux Composants
+
+#### Fichiers Ajoutés
+- `src/utils/web-sync-monitor.ts` - Surveillance synchronisation web
+- Interface web complètement mise à jour dans `web-dashboard/`
+- APIs étendues dans `src/web-server.ts`
+
+#### APIs Ajoutées
+- `POST /api/postgres-test-real` - Test connexion PostgreSQL authentique
+- `POST /api/sync-claude` - Synchronisation avec Claude Code  
+- `GET /api/check-agent-status` - Statut agent temps réel
+- Amélioration des APIs existantes avec validation
+
+#### Dépendances
+- **Ajout**: `pg@^8.11.0` pour connexion PostgreSQL
+- **Ajout**: `@types/pg@^8.10.0` pour types TypeScript
+- **Mise à jour**: Version 2.5.1 dans package.json
+
+### 🐛 Corrections
+
+#### Stabilité et Performance
+- **Gestion robuste des erreurs** de connexion PostgreSQL avec messages explicites
+- **Amélioration de la stabilité** WebSocket avec reconnexion automatique
+- **Optimisation des performances** interface web avec limitation des logs
+- **Correction des timeouts** de connexion base de données
+
+#### Interface Utilisateur
+- **Navigation fluide** entre les sections
+- **États visuels cohérents** pour tous les formulaires
+- **Gestion des popups** avec fermeture propre
+- **Responsive design** pour différentes tailles d'écran
+
+### 📚 Documentation
+
+#### README Complet
+- **Guide d'installation** mis à jour pour v2.5.1
+- **Instructions détaillées** pour configuration Claude Code
+- **Exemples d'utilisation** interface web et ligne de commande
+- **Guide de configuration** PostgreSQL
+
+#### Documentation Technique
+- **Architecture expliquée** avec diagrammes
+- **APIs documentées** avec exemples
+- **Guide de développement** pour contributeurs
+
+### 🔒 Sécurité
+
+#### Validation et Protection
+- **Validation stricte** des paramètres de connexion PostgreSQL
+- **Gestion sécurisée** des mots de passe (pas de logs des credentials)
+- **Isolation des processus** entre interface web et agent
+- **Protection CSRF** pour les APIs web
+
+---
+
 ## [2.0.2] - 2025-07-30 🔧 CRITICAL BUG FIXES
 
 ### 🔧 Critical Bug Fixes

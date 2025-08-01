@@ -1,7 +1,7 @@
 import { WebServer } from './dist/web-server.js';
 
 const server = new WebServer({ 
-  port: 3002, 
+  port: 3000, 
   host: 'localhost' 
 });
 

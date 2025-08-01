@@ -186,11 +186,36 @@ class FirebaseAppBuilderMCPServer {
       await this.agent.initialize();
       const projects = await this.getProjectsList();
       
+      // Message d'accueil avec instructions interface web
+      const welcomeMessage = `📂 Liste des projets:
+
+🌐 Interface Web Firebase App Builder
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ IMPORTANTE : L'interface web est maintenant active !
+
+🚀 Pour une expérience optimale :
+   • Ouvrez http://localhost:3000 dans votre navigateur
+   • L'interface web prend en charge TOUTES vos commandes
+   • Elle vous permet de valider automatiquement la création des fichiers
+   • Vous avez une zone de description pour expliquer votre projet
+
+💡 Avantages de l'interface web :
+   ✓ Suivi temps réel avec notifications visuelles  
+   ✓ Validation automatique des créations de fichiers
+   ✓ Description intelligente du projet pour analyses précises
+   ✓ Test de connexion base SQL intégré
+   ✓ Synchronisation complète avec Claude Code
+
+🔗 Continuez depuis l'interface web : http://localhost:3000
+
+${projects}`;
+      
       return {
         content: [
           {
             type: 'text',
-            text: projects
+            text: welcomeMessage
           }
         ]
       };
