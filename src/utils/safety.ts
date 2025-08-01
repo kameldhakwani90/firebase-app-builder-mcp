@@ -31,8 +31,8 @@ export class SafetyManager {
   constructor(config: Partial<SafetyConfig> = {}) {
     this.config = {
       maxRetries: 3,
-      timeoutMs: 30 * 60 * 1000, // 30 minutes par étape
-      maxExecutionTime: 2 * 60 * 60 * 1000, // 2 heures max par projet
+      timeoutMs: 60 * 60 * 1000, // 60 minutes par étape (Windows fix)
+      maxExecutionTime: 4 * 60 * 60 * 1000, // 4 heures max par projet (Windows fix)
       heartbeatIntervalMs: 30 * 1000, // 30 secondes
       crashDetectionEnabled: true,
       ...config
