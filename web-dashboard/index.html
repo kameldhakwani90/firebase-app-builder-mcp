@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔥 Firebase App Builder - Dashboard Web</title>
+    <title>🔥 Firebase App Builder - Interface Avancée</title>
     <style>
         * {
             margin: 0;
@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -43,86 +43,48 @@
             background-clip: text;
         }
 
-        .status-grid {
+        .main-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: 1fr 400px;
             gap: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
-        .status-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-            transition: transform 0.3s ease;
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        .status-card:hover {
-            transform: translateY(-5px);
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        .status-card h3 {
-            font-size: 1.1em;
-            margin-bottom: 10px;
-            color: #666;
-        }
-
-        .status-value {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .status-online {
-            color: #4CAF50;
-        }
-
-        .status-offline {
-            color: #f44336;
-        }
-
-        .progress-container {
+        .card {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
             padding: 25px;
-            margin-bottom: 30px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
         }
 
-        .progress-bar {
-            width: 100%;
-            height: 30px;
-            background: #e0e0e0;
-            border-radius: 15px;
-            overflow: hidden;
-            margin: 15px 0;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(45deg, #4CAF50, #45a049);
-            border-radius: 15px;
-            transition: width 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-
-        .config-form {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
-
-        .config-form h2 {
+        .card h2 {
             margin-bottom: 20px;
             color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Configuration initiale */
+        .config-section {
+            display: none;
+        }
+
+        .config-section.active {
+            display: block;
         }
 
         .form-grid {
@@ -143,7 +105,7 @@
             color: #555;
         }
 
-        .form-group input {
+        .form-group input, .form-group select {
             padding: 12px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
@@ -151,17 +113,126 @@
             transition: border-color 0.3s ease;
         }
 
-        .form-group input:focus {
+        .form-group input:focus, .form-group select:focus {
             outline: none;
             border-color: #4CAF50;
         }
 
-        .button-group {
-            display: flex;
+        /* Status Cards */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
-            justify-content: center;
         }
 
+        .status-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .status-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .status-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .status-online { color: #4CAF50; }
+        .status-offline { color: #f44336; }
+        .status-waiting { color: #FF9800; }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 25px;
+            background: #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border-radius: 12px;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Confirmations Claude */
+        .confirmation-item {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .confirmation-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Token Status */
+        .token-status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .token-status.available {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .token-status.exhausted {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .token-status.scheduled {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        /* Logs */
+        .logs-container {
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 10px;
+            padding: 15px;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            max-height: 250px;
+            overflow-y: auto;
+            line-height: 1.4;
+            font-size: 13px;
+        }
+
+        .log-line {
+            margin-bottom: 3px;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        /* Buttons */
         .btn {
             padding: 12px 25px;
             border: none;
@@ -184,59 +255,46 @@
             color: white;
         }
 
+        .btn-danger {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            color: white;
+        }
+
         .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
-        .logs-container {
-            background: rgba(0, 0, 0, 0.85);
-            border-radius: 15px;
-            padding: 20px;
-            color: #00ff00;
-            font-family: 'Courier New', monospace;
-            max-height: 300px;
-            overflow-y: auto;
-            line-height: 1.4;
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
-        .log-line {
-            margin-bottom: 5px;
-            opacity: 0;
-            animation: fadeIn 0.5s ease forwards;
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
-        @keyframes fadeIn {
-            to { opacity: 1; }
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .right-panel {
+                order: -1;
+            }
         }
 
-        .status-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-
-        .indicator-online {
-            background: #4CAF50;
-            animation: pulse 2s infinite;
-        }
-
-        .indicator-offline {
-            background: #f44336;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        .hidden {
-            display: none;
-        }
-
+        /* Notifications */
         .notification {
             position: fixed;
             top: 20px;
@@ -249,6 +307,7 @@
             opacity: 0;
             transform: translateX(100%);
             transition: all 0.3s ease;
+            max-width: 400px;
         }
 
         .notification.show {
@@ -256,12 +315,102 @@
             transform: translateX(0);
         }
 
-        .notification.success {
-            background: #4CAF50;
+        .notification.success { background: #4CAF50; }
+        .notification.error { background: #f44336; }
+        .notification.warning { background: #FF9800; }
+        .notification.info { background: #2196F3; }
+
+        .hidden { display: none; }
+
+        /* Projets Grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
         }
 
-        .notification.error {
-            background: #f44336;
+        .project-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .project-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .project-card.running {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.05);
+        }
+
+        .project-card.completed {
+            border-color: #2196F3;
+            background: rgba(33, 150, 243, 0.05);
+        }
+
+        .project-card.error {
+            border-color: #f44336;
+            background: rgba(244, 67, 54, 0.05);
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .project-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .project-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 500;
+        }
+
+        .status-running { background: #4CAF50; color: white; }
+        .status-completed { background: #2196F3; color: white; }
+        .status-error { background: #f44336; color: white; }
+        .status-paused { background: #FF9800; color: white; }
+        .status-started { background: #9C27B0; color: white; }
+
+        .project-info {
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .project-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+
+        /* Animations */
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
     </style>
 </head>
@@ -270,86 +419,321 @@
         <!-- Header -->
         <div class="header">
             <h1>🔥 Firebase App Builder</h1>
-            <p>Dashboard Web - Suivi en temps réel</p>
+            <p>Interface Avancée - Configuration & Suivi Temps Réel</p>
         </div>
 
-        <!-- Status Cards -->
-        <div class="status-grid">
-            <div class="status-card">
-                <h3>📊 Status</h3>
-                <div class="status-value" id="status">
-                    <span class="status-indicator indicator-offline"></span>
-                    Chargement...
-                </div>
-            </div>
-            <div class="status-card">
-                <h3>📂 Projet</h3>
-                <div class="status-value" id="project">-</div>
-            </div>
-            <div class="status-card">
-                <h3>🔄 Étape</h3>
-                <div class="status-value" id="step">-</div>
-            </div>
-            <div class="status-card">
-                <h3>⏱️ Durée</h3>
-                <div class="status-value" id="duration">-</div>
-            </div>
-        </div>
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Left Panel -->
+            <div class="left-panel">
+                <!-- Gestion des Projets -->
+                <div class="card config-section active" id="projects-management">
+                    <h2>📂 Gestion des Projets</h2>
+                    
+                    <!-- Projets Existants -->
+                    <div id="existing-projects">
+                        <h3 style="margin-bottom: 15px;">🔄 Projets Existants</h3>
+                        <div id="projects-list" class="projects-grid">
+                            <div style="text-align: center; padding: 20px; color: #666;">
+                                🔍 Chargement des projets...
+                            </div>
+                        </div>
+                    </div>
 
-        <!-- Progress Bar -->
-        <div class="progress-container">
-            <h2>📈 Progression</h2>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progress" style="width: 0%">0%</div>
-            </div>
-            <p id="progress-text">En attente de démarrage...</p>
-        </div>
+                    <!-- Agent Actuel -->
+                    <div id="current-agent" class="hidden" style="margin: 20px 0; padding: 15px; background: #e3f2fd; border-radius: 8px; border: 1px solid #90caf9;">
+                        <h4 style="margin-bottom: 10px;">🤖 Agent Actuel</h4>
+                        <div id="current-agent-info">
+                            <p><strong>Projet:</strong> <span id="current-project-name">-</span></p>
+                            <p><strong>Étape:</strong> <span id="current-project-step">-</span></p>
+                            <p><strong>Statut:</strong> <span id="current-project-status">-</span></p>
+                        </div>
+                        <div class="button-group" style="margin-top: 10px;">
+                            <button class="btn btn-warning" onclick="stopCurrentAgent()">
+                                ⏹️ Arrêter
+                            </button>
+                            <button class="btn btn-secondary" onclick="viewCurrentProgress()">
+                                📊 Voir Progression
+                            </button>
+                        </div>
+                    </div>
 
-        <!-- PostgreSQL Configuration -->
-        <div class="config-form" id="postgres-form">
-            <h2>🗄️ Configuration PostgreSQL</h2>
-            <p style="margin-bottom: 20px; color: #666;">
-                Saisissez les informations de connexion à votre base de données PostgreSQL :
-            </p>
-            
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="host">Hôte</label>
-                    <input type="text" id="host" value="localhost" placeholder="localhost">
+                    <!-- Actions Projets -->
+                    <div class="button-group" style="margin: 20px 0;">
+                        <button class="btn btn-primary" onclick="showNewProjectForm()">
+                            ➕ Nouveau Projet
+                        </button>
+                        <button class="btn btn-secondary" onclick="refreshProjects()">
+                            🔄 Actualiser
+                        </button>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="port">Port</label>
-                    <input type="number" id="port" value="5432" placeholder="5432">
-                </div>
-                <div class="form-group">
-                    <label for="username">Nom d'utilisateur</label>
-                    <input type="text" id="username" value="postgres" placeholder="postgres">
-                </div>
-                <div class="form-group">
-                    <label for="password">Mot de passe</label>
-                    <input type="password" id="password" placeholder="Mot de passe">
-                </div>
-                <div class="form-group">
-                    <label for="database">Base de données</label>
-                    <input type="text" id="database" value="kalliky_db" placeholder="kalliky_db">
-                </div>
-            </div>
-            
-            <div class="button-group">
-                <button class="btn btn-secondary" onclick="testConnection()">
-                    🔍 Tester la connexion
-                </button>
-                <button class="btn btn-primary" onclick="submitConfig()">
-                    🚀 Continuer la migration
-                </button>
-            </div>
-        </div>
 
-        <!-- Logs Container -->
-        <div class="config-form">
-            <h2>📝 Logs en temps réel</h2>
-            <div class="logs-container" id="logs">
-                <div class="log-line">🔍 Connexion au dashboard...</div>
+                <!-- Configuration Nouveau Projet -->
+                <div class="card config-section" id="new-project-config">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2>⚙️ Configuration Nouveau Projet</h2>
+                        <button class="btn btn-secondary" onclick="backToProjectsManagement()">
+                            ← Retour aux Projets
+                        </button>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="github-url">🔗 URL du Repository GitHub</label>
+                        <input type="url" id="github-url" placeholder="https://github.com/user/my-project" required>
+                    </div>
+
+                    <h3 style="margin: 20px 0 15px 0;">🗄️ Base de Données PostgreSQL</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="db-host">Hôte</label>
+                            <input type="text" id="db-host" value="localhost" placeholder="localhost">
+                        </div>
+                        <div class="form-group">
+                            <label for="db-port">Port</label>
+                            <input type="number" id="db-port" value="5432" placeholder="5432">
+                        </div>
+                        <div class="form-group">
+                            <label for="db-username">Utilisateur</label>
+                            <input type="text" id="db-username" value="postgres" placeholder="postgres">
+                        </div>
+                        <div class="form-group">
+                            <label for="db-password">Mot de passe</label>
+                            <input type="password" id="db-password" placeholder="Mot de passe" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="db-name">Base de données</label>
+                            <input type="text" id="db-name" placeholder="mon_projet_db" required>
+                        </div>
+                    </div>
+
+                    <h3 style="margin: 20px 0 15px 0;">👤 Super Administrateur (Optionnel)</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="admin-name">Nom complet</label>
+                            <input type="text" id="admin-name" placeholder="John Doe">
+                        </div>
+                        <div class="form-group">
+                            <label for="admin-email">Email</label>
+                            <input type="email" id="admin-email" placeholder="admin@monprojet.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="admin-password">Mot de passe</label>
+                            <input type="password" id="admin-password" placeholder="Mot de passe sécurisé">
+                        </div>
+                    </div>
+
+                    <div class="button-group" style="margin-top: 30px;">
+                        <button class="btn btn-secondary" onclick="testDatabaseConnection()">
+                            🔍 Tester la connexion DB
+                        </button>
+                        <button class="btn btn-primary" onclick="startMigration()">
+                            🚀 Démarrer la Migration
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Progression -->
+                <div class="card config-section" id="progress-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2>📈 Progression de la Migration</h2>
+                        <button class="btn btn-secondary" onclick="backToProjectsManagement()">
+                            ← Retour aux Projets
+                        </button>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress" style="width: 0%">0%</div>
+                    </div>
+                    <p id="progress-text">En attente de configuration...</p>
+                    
+                    <div class="status-grid" style="margin-top: 20px;">
+                        <div class="status-card">
+                            <h4>📊 Statut</h4>
+                            <div class="status-value" id="status">Configuration</div>
+                        </div>
+                        <div class="status-card">
+                            <h4>🔄 Étape</h4>
+                            <div class="status-value" id="step">Initialisation</div>
+                        </div>
+                        <div class="status-card">
+                            <h4>⏱️ Durée</h4>
+                            <div class="status-value" id="duration">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Confirmations Claude -->
+                <div class="card config-section" id="confirmations-section">
+                    <h2>🤖 Confirmations Claude Code</h2>
+                    <div id="confirmations-list">
+                        <p style="color: #666; text-align: center; padding: 20px;">
+                            Aucune confirmation en attente
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="right-panel">
+                <!-- Mise à Jour & Configuration -->
+                <div class="card">
+                    <h2>🔧 Configuration Système</h2>
+                    
+                    <!-- Version & Mise à jour -->
+                    <div id="version-info" style="margin-bottom: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>Version:</strong> <span id="current-version">2.5.0</span>
+                                <div id="update-status" style="margin-top: 5px; font-size: 0.9em;">
+                                    <span id="update-text" class="text-info">Vérification...</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary btn-small" onclick="checkForUpdates()" id="check-update-btn">
+                                🔍 Vérifier
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Mise à jour disponible -->
+                    <div id="update-available" class="hidden" style="margin-bottom: 20px; padding: 15px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px;">
+                        <h4 style="margin-bottom: 10px;">🚀 Mise à jour disponible !</h4>
+                        <p><strong>Nouvelle version:</strong> <span id="latest-version">-</span></p>
+                        <div class="button-group" style="margin-top: 10px;">
+                            <button class="btn btn-primary btn-small" onclick="updateAgent()">
+                                📥 Mettre à jour
+                            </button>
+                            <button class="btn btn-secondary btn-small" onclick="dismissUpdate()">
+                                ⏭️ Plus tard
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Configuration Port -->
+                    <div style="margin-bottom: 20px;">
+                        <h4>🌐 Configuration Port Web</h4>
+                        <div style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">
+                            <select id="port-selector" style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                                <option value="3000">3000</option>
+                                <option value="3001">3001</option>
+                                <option value="3002" selected>3002</option>
+                                <option value="3003">3003</option>
+                                <option value="8000">8000</option>
+                                <option value="8080">8080</option>
+                            </select>
+                            <button class="btn btn-secondary btn-small" onclick="changePort()">
+                                🔄 Changer
+                            </button>
+                        </div>
+                        <p style="font-size: 0.8em; color: #666; margin-top: 5px;">
+                            Port actuel: <span id="current-port">3002</span>
+                        </p>
+                    </div>
+
+                    <!-- Dossiers système -->
+                    <div style="margin-bottom: 20px;">
+                        <h4>📂 Dossiers Système</h4>
+                        <div style="font-size: 0.9em; line-height: 1.6;">
+                            <div style="margin: 8px 0;">
+                                <strong>Projets:</strong> 
+                                <a href="#" onclick="openFolder('projects')" style="color: #2196F3; text-decoration: none;">
+                                    C:/Users/util01/firebase-migrations/
+                                </a>
+                            </div>
+                            <div style="margin: 8px 0;">
+                                <strong>Agent:</strong> 
+                                <a href="#" onclick="openFolder('agent')" style="color: #2196F3; text-decoration: none;">
+                                    C:/Users/util01/firebase-app-builder-mcp/
+                                </a>
+                            </div>
+                            <div style="margin: 8px 0;">
+                                <strong>Logs:</strong> 
+                                <a href="#" onclick="openFolder('logs')" style="color: #2196F3; text-decoration: none;">
+                                    C:/Users/util01/firebase-migrations/logs/
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Commandes MCP -->
+                    <div style="margin-bottom: 20px;">
+                        <h4>⚡ Commandes Claude Code</h4>
+                        <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 0.9em;">
+                            <div style="margin-bottom: 8px;">
+                                <strong>/migrate</strong> https://github.com/user/repo
+                            </div>
+                            <div style="margin-bottom: 8px;">
+                                <strong>/continue</strong> nom_projet
+                            </div>
+                            <div style="margin-bottom: 8px;">
+                                <strong>/projects</strong> (lister tous)
+                            </div>
+                            <div>
+                                <strong>/status</strong> nom_projet
+                            </div>
+                        </div>
+                        <p style="font-size: 0.8em; color: #666; margin-top: 8px;">
+                            Utilisez ces commandes directement dans Claude Code avec "/"
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Token Status -->
+                <div class="card">
+                    <h2>🎯 Gestion des Tokens Claude</h2>
+                    <div class="token-status available" id="token-status">
+                        <strong>✅ Tokens Disponibles</strong>
+                        <p>Prêt pour la migration</p>
+                    </div>
+                    
+                    <div id="schedule-section" class="hidden">
+                        <h4>⏰ Programmer une Reprise</h4>
+                        <div class="form-group" style="margin: 10px 0;">
+                            <label for="resume-time">Heure de reprise</label>
+                            <input type="datetime-local" id="resume-time">
+                        </div>
+                        <div class="form-group" style="margin: 10px 0;">
+                            <label for="resume-reason">Raison</label>
+                            <select id="resume-reason">
+                                <option value="tokens-exhausted">Tokens épuisés</option>
+                                <option value="manual-pause">Pause manuelle</option>
+                                <option value="error-recovery">Récupération d'erreur</option>
+                                <option value="scheduled-maintenance">Maintenance programmée</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-warning" onclick="scheduleResume()">
+                            ⏰ Programmer
+                        </button>
+                    </div>
+
+                    <div class="button-group" style="margin-top: 15px;">
+                        <button class="btn btn-secondary" onclick="checkTokenStatus()" id="check-tokens-btn">
+                            🔍 Vérifier Tokens
+                        </button>
+                        <button class="btn btn-warning hidden" onclick="showScheduleSection()" id="schedule-btn">
+                            ⏰ Programmer Reprise
+                        </button>
+                        <button class="btn btn-primary hidden" onclick="resumeNow()" id="resume-btn">
+                            ▶️ Reprendre Maintenant
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Logs Temps Réel -->
+                <div class="card">
+                    <h2>📝 Logs Temps Réel</h2>
+                    <div class="logs-container" id="logs">
+                        <div class="log-line">🚀 Interface Web initialisée</div>
+                        <div class="log-line">⏳ En attente de configuration...</div>
+                    </div>
+                    <div class="button-group" style="margin-top: 15px;">
+                        <button class="btn btn-secondary" onclick="clearLogs()">
+                            🗑️ Vider
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportLogs()">
+                            💾 Exporter
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -359,19 +743,40 @@
 
     <script>
         let ws = null;
-        let reconnectInterval = null;
+        let currentProject = null;
+        let pendingConfirmations = new Map();
+        
+        // État de l'application
+        const appState = {
+            configured: false,
+            running: false,
+            tokensAvailable: true,
+            scheduledResume: null,
+            projects: [],
+            currentAgent: null
+        };
 
-        // Connexion WebSocket
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('🚀 Interface Web avancée chargée');
+            connectWebSocket();
+            loadProjects();
+            loadSystemConfig();
+            checkForUpdates();
+            
+            // Préremplir la date de reprise (dans 6 heures par défaut)
+            const futureTime = new Date();
+            futureTime.setHours(futureTime.getHours() + 6);
+            document.getElementById('resume-time').value = futureTime.toISOString().slice(0, 16);
+        });
+
+        // WebSocket Connection
         function connectWebSocket() {
             try {
-                ws = new WebSocket('ws://localhost:3001');
+                ws = new WebSocket('ws://localhost:3000');
                 
                 ws.onopen = function() {
-                    console.log('WebSocket connecté');
                     addLog('✅ Connexion WebSocket établie');
-                    updateStatus('online');
-                    
-                    // Demander le status initial
                     ws.send(JSON.stringify({ type: 'request-status' }));
                 };
                 
@@ -381,25 +786,14 @@
                 };
                 
                 ws.onclose = function() {
-                    console.log('WebSocket fermé');
                     addLog('❌ Connexion WebSocket fermée');
-                    updateStatus('offline');
-                    
-                    // Tentative de reconnexion
-                    if (!reconnectInterval) {
-                        reconnectInterval = setInterval(() => {
-                            addLog('🔄 Tentative de reconnexion...');
-                            connectWebSocket();
-                        }, 5000);
-                    }
+                    setTimeout(connectWebSocket, 5000);
                 };
                 
                 ws.onerror = function(error) {
-                    console.error('Erreur WebSocket:', error);
                     addLog('❌ Erreur WebSocket');
                 };
             } catch (error) {
-                console.error('Impossible de se connecter:', error);
                 addLog('❌ Impossible de se connecter au serveur');
             }
         }
@@ -407,16 +801,24 @@
         function handleWebSocketMessage(data) {
             switch (data.type) {
                 case 'status-update':
-                    updateDashboard(data.data);
+                    updateStatus(data.data);
                     break;
                     
-                case 'postgres-config-received':
-                    showNotification('Configuration PostgreSQL sauvegardée !', 'success');
-                    addLog('✅ Configuration PostgreSQL reçue');
+                case 'claude-confirmation-request':
+                    showClaudeConfirmation(data);
                     break;
                     
-                case 'postgres-test-result':
-                    handleTestResult(data.result);
+                case 'tokens-exhausted':
+                    handleTokensExhausted(data.data);
+                    break;
+                    
+                case 'auto-resume-triggered':
+                    handleAutoResume(data.data);
+                    break;
+                    
+                case 'project-config-received':
+                    showNotification('Configuration sauvegardée !', 'success');
+                    switchToProgressView();
                     break;
                     
                 default:
@@ -424,47 +826,128 @@
             }
         }
 
-        function updateDashboard(status) {
-            // Status
-            const statusEl = document.getElementById('status');
-            const indicator = statusEl.querySelector('.status-indicator');
+        // Configuration Functions
+        function testDatabaseConnection() {
+            const config = getDatabaseConfig();
             
-            if (status.isRunning) {
-                statusEl.innerHTML = '<span class="status-indicator indicator-online"></span>En cours';
-                statusEl.className = 'status-value status-online';
-            } else {
-                statusEl.innerHTML = '<span class="status-indicator indicator-offline"></span>Inactif';
-                statusEl.className = 'status-value status-offline';
+            if (!config.password) {
+                showNotification('Mot de passe requis pour tester la connexion', 'error');
+                return;
             }
             
-            // Projet
-            document.getElementById('project').textContent = status.projectName || 'Aucun';
+            addLog('🔍 Test de connexion PostgreSQL...');
+            showNotification('Test de connexion en cours...', 'info');
             
-            // Étape
-            document.getElementById('step').textContent = status.currentStep || 'Inactif';
-            
-            // Durée
-            const duration = status.duration ? formatDuration(status.duration) : '-';
-            document.getElementById('duration').textContent = duration;
-            
-            // Progression (estimation basée sur l'étape)
-            const progress = estimateProgress(status.currentStep);
-            updateProgress(progress);
+            fetch('/api/postgres-test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    addLog('✅ Demande de test envoyée');
+                }
+            })
+            .catch(error => {
+                showNotification('Erreur lors du test', 'error');
+                addLog('❌ Erreur test connexion: ' + error.message);
+            });
         }
 
-        function estimateProgress(step) {
-            const steps = {
-                'Analyse': 10,
-                'Migration': 25,
-                'Tests': 33,
-                'super-workflow': 33,
-                'Database': 50,
-                'API': 70,
-                'Tests-E2E': 90,
-                'Finalisé': 100
+        function startMigration() {
+            const githubUrl = document.getElementById('github-url').value;
+            const dbConfig = getDatabaseConfig();
+            const adminConfig = getAdminConfig();
+            
+            // Validation
+            if (!githubUrl) {
+                showNotification('URL GitHub requise', 'error');
+                return;
+            }
+            
+            if (!dbConfig.password || !dbConfig.database) {
+                showNotification('Configuration base de données incomplète', 'error');
+                return;
+            }
+            
+            const projectConfig = {
+                githubUrl: githubUrl,
+                database: dbConfig,
+                superAdmin: adminConfig.email ? adminConfig : null
             };
             
-            return steps[step] || 0;
+            addLog('🚀 Démarrage de la migration...');
+            addLog('📂 Projet: ' + githubUrl);
+            
+            fetch('/api/project-config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(projectConfig)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    appState.configured = true;
+                    currentProject = projectConfig;
+                    addLog('✅ Configuration envoyée à l\'agent');
+                } else {
+                    showNotification('Erreur: ' + data.error, 'error');
+                }
+            })
+            .catch(error => {
+                showNotification('Erreur de communication', 'error');
+                addLog('❌ Erreur: ' + error.message);
+            });
+        }
+
+        function getDatabaseConfig() {
+            return {
+                host: document.getElementById('db-host').value,
+                port: parseInt(document.getElementById('db-port').value),
+                username: document.getElementById('db-username').value,
+                password: document.getElementById('db-password').value,
+                database: document.getElementById('db-name').value
+            };
+        }
+
+        function getAdminConfig() {
+            return {
+                name: document.getElementById('admin-name').value,
+                email: document.getElementById('admin-email').value,
+                password: document.getElementById('admin-password').value
+            };
+        }
+
+        // UI Functions
+        function switchToProgressView() {
+            document.getElementById('initial-config').classList.remove('active');
+            document.getElementById('progress-section').classList.add('active');
+            document.getElementById('confirmations-section').classList.add('active');
+        }
+
+        function updateStatus(status) {
+            // Mise à jour du statut
+            const statusEl = document.getElementById('status');
+            const stepEl = document.getElementById('step');
+            const durationEl = document.getElementById('duration');
+            
+            if (status.isRunning) {
+                statusEl.textContent = 'En cours';
+                statusEl.className = 'status-value status-online';
+                appState.running = true;
+            } else {
+                statusEl.textContent = 'Inactif';
+                statusEl.className = 'status-value status-offline';
+                appState.running = false;
+            }
+            
+            stepEl.textContent = status.currentStep || 'Attente';
+            durationEl.textContent = status.duration ? formatDuration(status.duration) : '-';
+            
+            // Mise à jour de la progression
+            const progress = estimateProgress(status.currentStep);
+            updateProgress(progress);
         }
 
         function updateProgress(percent) {
@@ -476,17 +959,716 @@
             
             if (percent === 0) {
                 progressText.textContent = 'En attente de démarrage...';
+            } else if (percent < 25) {
+                progressText.textContent = 'Analyse du projet...';
             } else if (percent < 50) {
-                progressText.textContent = 'Configuration en cours...';
-            } else if (percent < 90) {
-                progressText.textContent = 'Génération des fichiers...';
+                progressText.textContent = 'Génération de la base de données...';
+            } else if (percent < 75) {
+                progressText.textContent = 'Création des APIs...';
             } else if (percent < 100) {
                 progressText.textContent = 'Tests et finalisation...';
             } else {
                 progressText.textContent = 'Migration terminée !';
+                showNotification('Migration terminée avec succès !', 'success');
             }
         }
 
+        function estimateProgress(step) {
+            const steps = {
+                'initialization': 5,
+                'analysis': 15,
+                'super-workflow': 35,
+                'database': 50,
+                'api': 70,
+                'tests': 85,
+                'finalization': 100
+            };
+            
+            return steps[step] || 0;
+        }
+
+        // Claude Confirmations
+        function showClaudeConfirmation(data) {
+            const confirmationsList = document.getElementById('confirmations-list');
+            
+            // Supprimer le message "aucune confirmation"
+            if (confirmationsList.children.length === 1 && confirmationsList.children[0].tagName === 'P') {
+                confirmationsList.innerHTML = '';
+            }
+            
+            const confirmationDiv = document.createElement('div');
+            confirmationDiv.className = 'confirmation-item';
+            confirmationDiv.innerHTML = `
+                <h4>🤖 Demande de Claude Code</h4>
+                <p><strong>Type:</strong> ${data.type}</p>
+                <p><strong>Message:</strong> ${data.message}</p>
+                <div class="confirmation-actions">
+                    <button class="btn btn-primary" onclick="confirmClaude('${data.requestId}', true)">
+                        ✅ Confirmer
+                    </button>
+                    <button class="btn btn-danger" onclick="confirmClaude('${data.requestId}', false)">
+                        ❌ Refuser
+                    </button>
+                    <input type="text" placeholder="Réponse personnalisée (optionnel)" 
+                           id="response-${data.requestId}" style="margin-left: 10px; padding: 8px;">
+                </div>
+            `;
+            
+            confirmationsList.appendChild(confirmationDiv);
+            pendingConfirmations.set(data.requestId, data);
+            
+            addLog('🤖 Nouvelle demande de confirmation Claude Code');
+            showNotification('Confirmation Claude Code requise', 'warning');
+        }
+
+        function confirmClaude(requestId, confirmed) {
+            const responseInput = document.getElementById(`response-${requestId}`);
+            const customResponse = responseInput ? responseInput.value : '';
+            
+            fetch('/api/claude-confirmation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    requestId: requestId,
+                    confirmed: confirmed,
+                    response: customResponse
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Supprimer la confirmation de l'interface
+                    const confirmationItem = document.querySelector(`button[onclick*="${requestId}"]`).closest('.confirmation-item');
+                    confirmationItem.remove();
+                    
+                    pendingConfirmations.delete(requestId);
+                    
+                    // Vérifier s'il n'y a plus de confirmations
+                    const confirmationsList = document.getElementById('confirmations-list');
+                    if (confirmationsList.children.length === 0) {
+                        confirmationsList.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">Aucune confirmation en attente</p>';
+                    }
+                    
+                    const action = confirmed ? 'confirmée' : 'refusée';
+                    addLog(`✅ Demande Claude Code ${action}`);
+                    showNotification(`Demande ${action}`, 'success');
+                }
+            })
+            .catch(error => {
+                showNotification('Erreur lors de la confirmation', 'error');
+                addLog('❌ Erreur confirmation: ' + error.message);
+            });
+        }
+
+        // Token Management
+        function checkTokenStatus() {
+            addLog('🔍 Vérification du statut des tokens...');
+            
+            // Simulation - à remplacer par vraie vérification
+            setTimeout(() => {
+                const tokensOk = Math.random() > 0.3; // 70% de chance d'avoir des tokens
+                
+                if (tokensOk) {
+                    updateTokenStatus('available', 'Tokens disponibles');
+                } else {
+                    updateTokenStatus('exhausted', 'Tokens épuisés - Reprise dans 6h recommandée');
+                }
+            }, 1000);
+        }
+
+        function updateTokenStatus(status, message) {
+            const tokenStatusEl = document.getElementById('token-status');
+            const scheduleBtnEl = document.getElementById('schedule-btn');
+            const resumeBtnEl = document.getElementById('resume-btn');
+            
+            appState.tokensAvailable = (status === 'available');
+            
+            if (status === 'available') {
+                tokenStatusEl.className = 'token-status available';
+                tokenStatusEl.innerHTML = `<strong>✅ Tokens Disponibles</strong><p>${message}</p>`;
+                scheduleBtnEl.classList.add('hidden');
+                resumeBtnEl.classList.add('hidden');
+            } else if (status === 'exhausted') {
+                tokenStatusEl.className = 'token-status exhausted';
+                tokenStatusEl.innerHTML = `<strong>❌ Tokens Épuisés</strong><p>${message}</p>`;
+                scheduleBtnEl.classList.remove('hidden');
+                resumeBtnEl.classList.add('hidden');
+            } else if (status === 'scheduled') {
+                tokenStatusEl.className = 'token-status scheduled';
+                tokenStatusEl.innerHTML = `<strong>⏰ Reprise Programmée</strong><p>${message}</p>`;
+                scheduleBtnEl.classList.add('hidden');
+                resumeBtnEl.classList.remove('hidden');
+            }
+            
+            addLog(`🎯 Statut tokens: ${message}`);
+        }
+
+        function handleTokensExhausted(data) {
+            updateTokenStatus('exhausted', data.message);
+            showNotification('Tokens Claude Code épuisés', 'warning');
+            
+            if (data.suggestedResumeTime) {
+                const resumeTime = new Date(data.suggestedResumeTime);
+                document.getElementById('resume-time').value = resumeTime.toISOString().slice(0, 16);
+            }
+        }
+
+        function showScheduleSection() {
+            document.getElementById('schedule-section').classList.remove('hidden');
+        }
+
+        function scheduleResume() {
+            const resumeTime = document.getElementById('resume-time').value;
+            const reason = document.getElementById('resume-reason').value;
+            
+            if (!resumeTime) {
+                showNotification('Heure de reprise requise', 'error');
+                return;
+            }
+            
+            fetch('/api/schedule-resume', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    resumeTime: resumeTime,
+                    reason: reason
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const resumeDate = new Date(resumeTime);
+                    updateTokenStatus('scheduled', `Reprise prévue: ${resumeDate.toLocaleString()}`);
+                    document.getElementById('schedule-section').classList.add('hidden');
+                    appState.scheduledResume = resumeTime;
+                    
+                    showNotification('Reprise programmée avec succès', 'success');
+                    addLog(`⏰ Reprise programmée pour ${resumeDate.toLocaleString()}`);
+                }
+            })
+            .catch(error => {
+                showNotification('Erreur lors de la programmation', 'error');
+                addLog('❌ Erreur programmation: ' + error.message);
+            });
+        }
+
+        function resumeNow() {
+            if (confirm('Reprendre la migration maintenant ?')) {
+                addLog('▶️ Reprise manuelle déclenchée');
+                showNotification('Reprise de la migration...', 'info');
+                
+                // Déclencher la reprise
+                fetch('/api/manual-resume', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ manual: true })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateTokenStatus('available', 'Migration reprise');
+                        appState.scheduledResume = null;
+                    }
+                })
+                .catch(error => {
+                    showNotification('Erreur lors de la reprise', 'error');
+                });
+            }
+        }
+
+        function handleAutoResume(data) {
+            addLog('🔄 Reprise automatique déclenchée');
+            showNotification('Reprise automatique de la migration', 'success');
+            updateTokenStatus('available', 'Migration reprise automatiquement');
+            appState.scheduledResume = null;
+        }
+
+        // Logs Functions
+        function addLog(message) {
+            const logsContainer = document.getElementById('logs');
+            const logLine = document.createElement('div');
+            logLine.className = 'log-line';
+            logLine.textContent = `${new Date().toLocaleTimeString()} ${message}`;
+            
+            logsContainer.appendChild(logLine);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+            
+            // Limiter à 100 lignes
+            while (logsContainer.children.length > 100) {
+                logsContainer.removeChild(logsContainer.firstChild);
+            }
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+            addLog('🗑️ Logs vidés');
+        }
+
+        function exportLogs() {
+            const logs = Array.from(document.getElementById('logs').children)
+                .map(line => line.textContent)
+                .join('\n');
+                
+            const blob = new Blob([logs], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `firebase-agent-logs-${new Date().toISOString().slice(0, 19)}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showNotification('Logs exportés', 'success');
+        }
+
+        // ===== GESTION DES PROJETS =====
+        
+        function loadProjects() {
+            addLog('📂 Chargement des projets...');
+            
+            fetch('/api/projects')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        appState.projects = data.projects || [];
+                        appState.currentAgent = data.currentAgent;
+                        renderProjects();
+                        updateCurrentAgent();
+                        addLog(`✅ ${appState.projects.length} projet(s) chargé(s)`);
+                    }
+                })
+                .catch(error => {
+                    addLog(`❌ Erreur chargement projets: ${error.message}`);
+                    showNotification('Erreur lors du chargement des projets', 'error');
+                });
+        }
+
+        function renderProjects() {
+            const projectsList = document.getElementById('projects-list');
+            
+            if (appState.projects.length === 0) {
+                projectsList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        📭 Aucun projet trouvé
+                        <p style="margin-top: 10px; font-size: 0.9em;">Créez votre premier projet !</p>
+                    </div>
+                `;
+                return;
+            }
+
+            projectsList.innerHTML = appState.projects.map(project => {
+                const isRunning = appState.currentAgent && appState.currentAgent.projectName === project.name;
+                const statusClass = getProjectStatusClass(project.status, isRunning);
+                const statusText = getProjectStatusText(project.status, isRunning);
+                
+                return `
+                    <div class="project-card ${statusClass}">
+                        <div class="project-header">
+                            <div class="project-title">${project.name}</div>
+                            <div class="project-status status-${statusClass}">${statusText}</div>
+                        </div>
+                        
+                        <div class="project-info">
+                            <p><strong>URL:</strong> <a href="${project.url}" target="_blank" style="color: #2196F3; text-decoration: none;">${project.url}</a></p>
+                            <p><strong>Étape:</strong> ${project.currentStep || 'Non définie'}</p>
+                            <p><strong>Dernière activité:</strong> ${formatDate(project.lastActivity)}</p>
+                        </div>
+                        
+                        <div class="project-actions">
+                            ${renderProjectActions(project, isRunning)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getProjectStatusClass(status, isRunning = false) {
+            if (isRunning) return 'running';
+            switch (status) {
+                case 'completed': return 'completed';
+                case 'error': return 'error';
+                case 'paused': return 'paused';
+                default: return 'started';
+            }
+        }
+
+        function getProjectStatusText(status, isRunning = false) {
+            if (isRunning) return '🔄 En cours';
+            switch (status) {
+                case 'completed': return '✅ Terminé';
+                case 'error': return '❌ Erreur';
+                case 'paused': return '⏸️ Pausé';
+                case 'started': return '⭐ Démarré';
+                default: return '📝 Inconnu';
+            }
+        }
+
+        function renderProjectActions(project, isRunning) {
+            if (isRunning) {
+                return `
+                    <button class="btn btn-secondary btn-small" onclick="viewProjectProgress('${project.name}')">
+                        📊 Progression
+                    </button>
+                    <button class="btn btn-warning btn-small" onclick="pauseProject('${project.name}')">
+                        ⏸️ Pause
+                    </button>
+                `;
+            } else {
+                return `
+                    <button class="btn btn-primary btn-small" onclick="continueProject('${project.name}')">
+                        ▶️ Continuer
+                    </button>
+                    <button class="btn btn-warning btn-small" onclick="showOverwriteForm('${project.name}')">
+                        🔄 Écraser
+                    </button>
+                    <button class="btn btn-danger btn-small" onclick="deleteProject('${project.name}')">
+                        🗑️ Supprimer
+                    </button>
+                `;
+            }
+        }
+
+        function updateCurrentAgent() {
+            const currentAgentDiv = document.getElementById('current-agent');
+            
+            if (appState.currentAgent && appState.currentAgent.isRunning) {
+                currentAgentDiv.classList.remove('hidden');
+                document.getElementById('current-project-name').textContent = appState.currentAgent.projectName || '-';
+                document.getElementById('current-project-step').textContent = appState.currentAgent.currentStep || '-';
+                document.getElementById('current-project-status').textContent = appState.currentAgent.isRunning ? '🔄 Actif' : '⏹️ Arrêté';
+            } else {
+                currentAgentDiv.classList.add('hidden');
+            }
+        }
+
+        function refreshProjects() {
+            addLog('🔄 Actualisation des projets...');
+            loadProjects();
+        }
+
+        function showNewProjectForm() {
+            document.getElementById('projects-management').classList.remove('active');
+            document.getElementById('new-project-config').classList.add('active');
+            addLog('📝 Formulaire nouveau projet affiché');
+        }
+
+        function continueProject(projectName) {
+            if (confirm(`Continuer le projet "${projectName}" ?`)) {
+                addLog(`▶️ Continuation du projet ${projectName}...`);
+                
+                fetch('/api/continue-project', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ projectName })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(`Projet "${projectName}" en cours de reprise`, 'success');
+                        addLog(`✅ Demande de continuation envoyée`);
+                        setTimeout(loadProjects, 2000);
+                    }
+                })
+                .catch(error => {
+                    showNotification('Erreur lors de la continuation', 'error');
+                    addLog(`❌ Erreur: ${error.message}`);
+                });
+            }
+        }
+
+        function showOverwriteForm(projectName) {
+            const newGithubUrl = prompt(`Nouvelle URL GitHub pour écraser "${projectName}" :`);
+            if (newGithubUrl) {
+                if (confirm(`Êtes-vous sûr de vouloir écraser le projet "${projectName}" avec "${newGithubUrl}" ?`)) {
+                    overwriteProject(projectName, newGithubUrl);
+                }
+            }
+        }
+
+        function overwriteProject(projectName, newGithubUrl) {
+            addLog(`🔄 Écrasement du projet ${projectName}...`);
+            
+            const database = getDatabaseConfig();
+            const superAdmin = getAdminConfig();
+            
+            fetch('/api/overwrite-project', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    projectName,
+                    newGithubUrl,
+                    database,
+                    superAdmin: superAdmin.email ? superAdmin : null
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(`Projet "${projectName}" écrasé avec succès`, 'success');
+                    addLog(`✅ Projet écrasé avec ${newGithubUrl}`);
+                    setTimeout(loadProjects, 2000);
+                }
+            })
+            .catch(error => {
+                showNotification('Erreur lors de l\'écrasement', 'error');
+                addLog(`❌ Erreur: ${error.message}`);
+            });
+        }
+
+        function deleteProject(projectName) {
+            if (confirm(`Êtes-vous sûr de vouloir supprimer définitivement le projet "${projectName}" ?`)) {
+                addLog(`🗑️ Suppression du projet ${projectName}...`);
+                
+                fetch(`/api/projects/${encodeURIComponent(projectName)}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(`Projet "${projectName}" supprimé`, 'success');
+                        addLog(`✅ Projet supprimé`);
+                        setTimeout(loadProjects, 1000);
+                    }
+                })
+                .catch(error => {
+                    showNotification('Erreur lors de la suppression', 'error');
+                    addLog(`❌ Erreur: ${error.message}`);
+                });
+            }
+        }
+
+        function viewProjectProgress(projectName) {
+            switchToProgressView();
+            addLog(`📊 Affichage progression du projet ${projectName}`);
+        }
+
+        function viewCurrentProgress() {
+            if (appState.currentAgent && appState.currentAgent.projectName) {
+                viewProjectProgress(appState.currentAgent.projectName);
+            }
+        }
+
+        function stopCurrentAgent() {
+            if (confirm('Arrêter l\'agent actuel ?')) {
+                addLog('⏹️ Arrêt de l\'agent demandé...');
+                showNotification('Fonctionnalité d\'arrêt en cours d\'implémentation', 'warning');
+            }
+        }
+
+        function pauseProject(projectName) {
+            if (confirm(`Mettre en pause le projet "${projectName}" ?`)) {
+                addLog(`⏸️ Pause du projet ${projectName}...`);
+                showNotification('Fonctionnalité de pause en cours d\'implémentation', 'warning');
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Non définie';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR') + ' ' + date.toLocaleTimeString('fr-FR');
+        }
+
+        function backToProjectsManagement() {
+            // Masquer toutes les sections
+            document.querySelectorAll('.config-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Afficher la gestion des projets
+            document.getElementById('projects-management').classList.add('active');
+            
+            // Actualiser les projets
+            loadProjects();
+            addLog('🔙 Retour à la gestion des projets');
+        }
+
+        // ===== GESTION SYSTÈME & MISES À JOUR =====
+        
+        function loadSystemConfig() {
+            fetch('/api/system-config')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const config = data.config;
+                        document.getElementById('current-port').textContent = config.currentPort;
+                        
+                        // Mettre à jour le sélecteur de port
+                        const portSelector = document.getElementById('port-selector');
+                        portSelector.value = config.currentPort;
+                        
+                        addLog(`⚙️ Configuration système chargée (Port: ${config.currentPort})`);
+                    }
+                })
+                .catch(error => {
+                    addLog(`❌ Erreur chargement config système: ${error.message}`);
+                });
+        }
+
+        function checkForUpdates() {
+            const checkBtn = document.getElementById('check-update-btn');
+            const updateText = document.getElementById('update-text');
+            
+            checkBtn.disabled = true;
+            checkBtn.textContent = '🔄 Vérification...';
+            updateText.textContent = 'Vérification en cours...';
+            updateText.className = 'text-info';
+            
+            fetch('/api/check-updates')
+                .then(response => response.json())
+                .then(data => {
+                    checkBtn.disabled = false;
+                    checkBtn.textContent = '🔍 Vérifier';
+                    
+                    if (data.success) {
+                        document.getElementById('current-version').textContent = data.currentVersion;
+                        
+                        if (data.hasUpdate) {
+                            updateText.textContent = `Mise à jour disponible: v${data.latestVersion}`;
+                            updateText.className = 'text-warning';
+                            document.getElementById('latest-version').textContent = data.latestVersion;
+                            document.getElementById('update-available').classList.remove('hidden');
+                            showNotification(`Nouvelle version ${data.latestVersion} disponible !`, 'info');
+                            addLog(`🆕 Mise à jour disponible: v${data.latestVersion}`);
+                        } else {
+                            updateText.textContent = 'À jour';
+                            updateText.className = 'text-success';
+                            document.getElementById('update-available').classList.add('hidden');
+                            addLog('✅ Agent à jour');
+                        }
+                    } else {
+                        updateText.textContent = 'Erreur vérification';
+                        updateText.className = 'text-error';
+                        addLog(`❌ Erreur vérification: ${data.error}`);
+                    }
+                })
+                .catch(error => {
+                    checkBtn.disabled = false;
+                    checkBtn.textContent = '🔍 Vérifier';
+                    updateText.textContent = 'Erreur de connexion';
+                    updateText.className = 'text-error';
+                    addLog(`❌ Erreur vérification mises à jour: ${error.message}`);
+                });
+        }
+
+        function updateAgent() {
+            if (!confirm('Mettre à jour l\'agent Firebase App Builder ?\n\nCela va:\n- Désinstaller l\'ancienne version\n- Installer la dernière version depuis GitHub\n- Redémarrer peut être nécessaire')) {
+                return;
+            }
+            
+            addLog('🚀 Début mise à jour de l\'agent...');
+            showNotification('Mise à jour en cours...', 'info');
+            
+            // Désactiver le bouton
+            const updateBtn = event.target;
+            updateBtn.disabled = true;
+            updateBtn.textContent = '📥 Mise à jour...';
+            
+            fetch('/api/update-agent', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                updateBtn.disabled = false;
+                updateBtn.textContent = '📥 Mettre à jour';
+                
+                if (data.success) {
+                    showNotification('Mise à jour terminée avec succès !', 'success');
+                    addLog('✅ Mise à jour terminée');
+                    
+                    // Masquer la notification de mise à jour
+                    document.getElementById('update-available').classList.add('hidden');
+                    
+                    // Afficher les étapes dans les logs
+                    if (data.result && data.result.steps) {
+                        data.result.steps.forEach(step => addLog(step));
+                    }
+                    
+                    // Rafraîchir la vérification
+                    setTimeout(checkForUpdates, 2000);
+                } else {
+                    showNotification('Erreur lors de la mise à jour', 'error');
+                    addLog(`❌ Erreur mise à jour: ${data.result?.error || 'Erreur inconnue'}`);
+                    
+                    if (data.result && data.result.steps) {
+                        data.result.steps.forEach(step => addLog(step));
+                    }
+                }
+            })
+            .catch(error => {
+                updateBtn.disabled = false;
+                updateBtn.textContent = '📥 Mettre à jour';
+                showNotification('Erreur de communication', 'error');
+                addLog(`❌ Erreur: ${error.message}`);
+            });
+        }
+
+        function dismissUpdate() {
+            document.getElementById('update-available').classList.add('hidden');
+            addLog('⏭️ Mise à jour reportée');
+        }
+
+        function changePort() {
+            const newPort = document.getElementById('port-selector').value;
+            const currentPort = document.getElementById('current-port').textContent;
+            
+            if (newPort === currentPort) {
+                showNotification('Port identique, aucun changement nécessaire', 'info');
+                return;
+            }
+            
+            if (confirm(`Changer le port de ${currentPort} vers ${newPort} ?\n\nCela va redémarrer l'interface web.`)) {
+                addLog(`🔄 Changement de port vers ${newPort}...`);
+                
+                fetch('/api/change-port', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ newPort: parseInt(newPort) })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('Redémarrage avec nouveau port...', 'info');
+                        addLog(`✅ Redémarrage sur port ${newPort} demandé`);
+                        
+                        // Rediriger vers le nouveau port après 3 secondes
+                        setTimeout(() => {
+                            window.location.href = `http://localhost:${newPort}`;
+                        }, 3000);
+                    } else {
+                        showNotification('Erreur changement de port', 'error');
+                        addLog(`❌ Erreur: ${data.error}`);
+                    }
+                })
+                .catch(error => {
+                    showNotification('Erreur de communication', 'error');
+                    addLog(`❌ Erreur: ${error.message}`);
+                });
+            }
+        }
+
+        function openFolder(type) {
+            const folders = {
+                'projects': 'C:/Users/util01/firebase-migrations/',
+                'agent': 'C:/Users/util01/firebase-app-builder-mcp/',
+                'logs': 'C:/Users/util01/firebase-migrations/logs/'
+            };
+            
+            const folderPath = folders[type];
+            if (folderPath) {
+                addLog(`📂 Ouverture dossier: ${folderPath}`);
+                showNotification(`Tentative d'ouverture du dossier ${type}`, 'info');
+                
+                // Pour Windows, on peut essayer d'ouvrir avec explorer
+                // Mais depuis le navigateur web, c'est limité pour des raisons de sécurité
+                // On affiche juste le chemin pour que l'utilisateur puisse le copier
+                navigator.clipboard.writeText(folderPath).then(() => {
+                    showNotification(`Chemin copié: ${folderPath}`, 'success');
+                }).catch(() => {
+                    showNotification(`Chemin: ${folderPath}`, 'info');
+                });
+            }
+        }
+
+        // Utility Functions
         function formatDuration(ms) {
             const seconds = Math.floor(ms / 1000);
             const minutes = Math.floor(seconds / 60);
@@ -501,123 +1683,22 @@
             }
         }
 
-        function addLog(message) {
-            const logsContainer = document.getElementById('logs');
-            const logLine = document.createElement('div');
-            logLine.className = 'log-line';
-            logLine.textContent = `${new Date().toLocaleTimeString()} ${message}`;
-            
-            logsContainer.appendChild(logLine);
-            logsContainer.scrollTop = logsContainer.scrollHeight;
-            
-            // Limiter à 50 lignes
-            while (logsContainer.children.length > 50) {
-                logsContainer.removeChild(logsContainer.firstChild);
-            }
-        }
-
-        function updateStatus(status) {
-            // Mise à jour des indicateurs de status
-        }
-
-        function testConnection() {
-            const config = getPostgresConfig();
-            addLog('🔍 Test de connexion PostgreSQL...');
-            
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({
-                    type: 'postgres-test-connection',
-                    config: config
-                }));
-            } else {
-                showNotification('Pas de connexion WebSocket', 'error');
-            }
-        }
-
-        function submitConfig() {
-            const config = getPostgresConfig();
-            
-            // Validation basique
-            if (!config.password) {
-                showNotification('Le mot de passe est requis', 'error');
-                return;
-            }
-            
-            addLog('📝 Envoi de la configuration PostgreSQL...');
-            
-            // Envoyer via HTTP
-            fetch('/api/postgres-config', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(config)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification('Configuration envoyée !', 'success');
-                    addLog('✅ Configuration PostgreSQL envoyée');
-                    
-                    // Masquer le formulaire
-                    document.getElementById('postgres-form').style.display = 'none';
-                } else {
-                    showNotification('Erreur: ' + data.error, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-                showNotification('Erreur de communication', 'error');
-            });
-        }
-
-        function getPostgresConfig() {
-            return {
-                host: document.getElementById('host').value,
-                port: parseInt(document.getElementById('port').value),
-                username: document.getElementById('username').value,
-                password: document.getElementById('password').value,
-                database: document.getElementById('database').value
-            };
-        }
-
-        function handleTestResult(result) {
-            if (result.success) {
-                showNotification('Connexion réussie !', 'success');
-                addLog('✅ Test de connexion réussi');
-            } else {
-                showNotification('Connexion échouée: ' + result.message, 'error');
-                addLog('❌ Test de connexion échoué: ' + result.message);
-            }
-        }
-
-        function showNotification(message, type) {
+        function showNotification(message, type = 'info') {
             const notification = document.getElementById('notification');
             notification.textContent = message;
             notification.className = `notification ${type} show`;
             
             setTimeout(() => {
                 notification.classList.remove('show');
-            }, 4000);
+            }, 5000);
         }
 
-        // Initialisation
-        document.addEventListener('DOMContentLoaded', function() {
-            addLog('🚀 Dashboard Web initialisé');
-            connectWebSocket();
-            
-            // Mise à jour périodique des logs
-            setInterval(() => {
-                fetch('/api/logs')
-                    .then(response => response.json())
-                    .then(data => {
-                        // Traiter les nouveaux logs si nécessaire
-                    })
-                    .catch(error => {
-                        console.error('Erreur récupération logs:', error);
-                    });
-            }, 10000); // Toutes les 10 secondes
-        });
+        // Auto-refresh status every 10 seconds
+        setInterval(() => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'request-status' }));
+            }
+        }, 10000);
     </script>
 </body>
 </html>

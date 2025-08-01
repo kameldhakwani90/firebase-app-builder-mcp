@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
 import { FirebaseAppBuilderAgent } from './agent.js';
+import { WebServer } from './web-server.js';
 import chalk from 'chalk';
+import { spawn } from 'child_process';
 
 const BANNER = `
 🚀 FirebaseAppBuilder Agent v2.0.7
@@ -14,6 +16,26 @@ async function main() {
   console.log(chalk.blue.bold(BANNER));
   
   try {
+    // 🚀 ÉTAPE 1: Lancer l'interface web IMMÉDIATEMENT
+    console.log(chalk.cyan('🌐 Démarrage de l\'interface web...'));
+    
+    const webServer = new WebServer({
+      port: 3000,
+      host: 'localhost'
+    });
+    
+    const webUrl = await webServer.start();
+    
+    // Ouvrir automatiquement dans le navigateur
+    console.log(chalk.green('🚀 Ouverture automatique du navigateur...'));
+    openBrowser(webUrl);
+    
+    console.log(chalk.yellow('\n📋 INSTRUCTIONS:'));
+    console.log(chalk.white('1. Configurez votre projet sur l\'interface web'));
+    console.log(chalk.white('2. L\'agent démarrera automatiquement après configuration'));
+    console.log(chalk.white('3. Surveillez la progression en temps réel'));
+    
+    // 🚀 ÉTAPE 2: Attendre la configuration puis démarrer l'agent
     const agent = new FirebaseAppBuilderAgent();
     await agent.initialize();
     
@@ -30,12 +52,64 @@ async function main() {
       return;
     }
     
-    // Exécuter l'agent
-    await agent.run(args);
+    // Mode web - attendre la configuration via interface
+    if (args.length === 0 || !args.includes('--no-web')) {
+      console.log(chalk.blue('⏳ En attente de configuration via interface web...'));
+      await waitForWebConfiguration(webServer, agent, args);
+    } else {
+      // Mode classique (ligne de commande)
+      await agent.run(args);
+    }
     
   } catch (error: any) {
     console.error(chalk.red(`❌ Erreur fatale: ${error.message}`));
     process.exit(1);
+  }
+}
+
+async function waitForWebConfiguration(webServer: WebServer, agent: FirebaseAppBuilderAgent, args: string[]) {
+  return new Promise<void>((resolve, reject) => {
+    const checkInterval = setInterval(async () => {
+      const config = webServer.getProjectConfig();
+      
+      if (config && config.githubUrl) {
+        clearInterval(checkInterval);
+        
+        console.log(chalk.green('✅ Configuration reçue via interface web !'));
+        console.log(chalk.cyan('🚀 Démarrage de la migration...'));
+        
+        try {
+          // Démarrer l'agent avec l'URL GitHub configurée
+          await agent.run([config.githubUrl]);
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      }
+    }, 2000); // Vérifier toutes les 2 secondes
+  });
+}
+
+function openBrowser(url: string) {
+  const platform = process.platform;
+  let command: string;
+  
+  switch (platform) {
+    case 'win32':
+      command = 'start';
+      break;
+    case 'darwin':
+      command = 'open';
+      break;
+    default:
+      command = 'xdg-open';
+  }
+  
+  try {
+    spawn(command, [url], { detached: true, stdio: 'ignore' });
+  } catch (error) {
+    console.log(chalk.yellow(`⚠️  Impossible d'ouvrir automatiquement le navigateur`));
+    console.log(chalk.white(`🌐 Ouvrez manuellement: ${url}`));
   }
 }
 

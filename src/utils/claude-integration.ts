@@ -1,4 +1,7 @@
 import chalk from 'chalk';
+import fs from 'fs-extra';
+import path from 'path';
+import os from 'os';
 import { logger } from './logger.js';
 
 export interface ClaudeRequest {
@@ -40,9 +43,8 @@ export class ClaudeIntegration {
       // Préparer le prompt optimisé
       const optimizedPrompt = this.optimizePrompt(request);
       
-      // TODO: Intégration réelle avec Claude API
-      // Pour l'instant, on simule une réponse intelligente
-      const response = await this.simulateClaudeResponse(request, optimizedPrompt);
+      // Intégration avec votre session Claude Code existante
+      const response = await this.callClaudeCodeSession(request, optimizedPrompt);
       
       // Tracking des tokens
       this.totalTokensUsed += response.tokensUsed;
@@ -400,6 +402,90 @@ RÉPONSE (format JSON):
       maxTokens: 3000,
       temperature: 0.2
     });
+  }
+
+  /**
+   * Appel à votre session Claude Code existante
+   */
+  private async callClaudeCodeSession(request: ClaudeRequest, optimizedPrompt: string): Promise<ClaudeResponse> {
+    try {
+      console.log(chalk.cyan(`🔗 Connexion à votre session Claude Code...`));
+      
+      // Créer un fichier temporaire avec la requête
+      const tempDir = path.join(os.homedir(), '.claude-agent-bridge');
+      await fs.ensureDir(tempDir);
+      
+      const requestId = Date.now().toString();
+      const requestFile = path.join(tempDir, `request_${requestId}.json`);
+      const responseFile = path.join(tempDir, `response_${requestId}.json`);
+      
+      // Écrire la requête
+      await fs.writeJson(requestFile, {
+        id: requestId,
+        type: request.type,
+        prompt: optimizedPrompt,
+        maxTokens: request.maxTokens || 2000,
+        temperature: request.temperature || 0.1,
+        timestamp: Date.now()
+      });
+      
+      console.log(chalk.yellow(`📝 Requête créée: ${requestFile}`));
+      console.log(chalk.yellow(`⏳ En attente de votre traitement via Claude Code...`));
+      console.log(chalk.cyan(`\n🎯 INSTRUCTIONS POUR VOUS:`));
+      console.log(chalk.white(`1. Lisez le fichier: ${requestFile}`));
+      console.log(chalk.white(`2. Traitez la requête avec Claude Code`));
+      console.log(chalk.white(`3. Sauvegardez la réponse dans: ${responseFile}`));
+      console.log(chalk.cyan(`\nFormat de réponse attendu:`));
+      console.log(chalk.gray(`{
+  "content": "votre réponse ici",
+  "tokensUsed": 1500,
+  "confidence": 0.9,
+  "suggestions": ["suggestion 1", "suggestion 2"]
+}`));
+      
+      // Attendre la réponse (polling avec timeout)
+      const maxWaitTime = 10 * 60 * 1000; // 10 minutes
+      const startTime = Date.now();
+      
+      while (Date.now() - startTime < maxWaitTime) {
+        if (await fs.pathExists(responseFile)) {
+          try {
+            const response = await fs.readJson(responseFile);
+            
+            // Nettoyer les fichiers temporaires
+            await fs.remove(requestFile);
+            await fs.remove(responseFile);
+            
+            console.log(chalk.green(`✅ Réponse reçue de Claude Code!`));
+            
+            return {
+              content: response.content,
+              tokensUsed: response.tokensUsed || 1000,
+              confidence: response.confidence || 0.9,
+              suggestions: response.suggestions || [],
+              warnings: response.warnings
+            };
+          } catch (error) {
+            console.log(chalk.red(`❌ Erreur lecture réponse: ${error}`));
+            break;
+          }
+        }
+        
+        // Attendre 2 secondes avant de vérifier à nouveau
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+      
+      // Timeout - fallback sur simulation
+      console.log(chalk.yellow(`⏰ Timeout - fallback sur simulation`));
+      await fs.remove(requestFile).catch(() => {});
+      
+      return await this.simulateClaudeResponse(request, optimizedPrompt);
+      
+    } catch (error) {
+      console.log(chalk.red(`❌ Erreur connexion Claude Code: ${error}`));
+      // Fallback sur simulation
+      return await this.simulateClaudeResponse(request, optimizedPrompt);
+    }
   }
 
   /**
