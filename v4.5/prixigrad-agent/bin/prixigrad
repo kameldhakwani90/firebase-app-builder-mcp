@@ -1,0 +1,98 @@
+#!/usr/bin/env node
+
+const { program } = require('commander');
+let chalk;
+try {
+  chalk = require('chalk');
+} catch (error) {
+  chalk = {
+    blue: (text) => text,
+    green: (text) => text,
+    yellow: (text) => text,
+    red: (text) => text,
+    white: (text) => text
+  };
+}
+const packageJson = require('../package.json');
+
+// Configuration du programme principal
+program
+  .name('prixigrad')
+  .description('🎭 PRIXIGRAD.IO Agent - Transformateur d\'applications Firebase')
+  .version(packageJson.version)
+  .configureOutput({
+    writeErr: (str) => process.stdout.write(`[ERROR] ${str}`)
+  });
+
+// Banner de démarrage  
+console.log(`
+╔══════════════════════════════════════════════════════════╗
+║                🎭 PRIXIGRAD.IO AGENT                     ║
+║              v${packageJson.version} - Transformation Tool              ║
+╚══════════════════════════════════════════════════════════╝
+`);
+
+// Commande: prixigrad init
+program
+  .command('init')
+  .description('Initialise PRIXIGRAD.IO sur cette machine')
+  .option('-f, --force', 'Force la réinstallation même si déjà configuré')
+  .option('-v, --verbose', 'Affichage détaillé')
+  .action(require('../lib/cli/commands/init'));
+
+// Commande: prixigrad start  
+program
+  .command('start')
+  .description('Lance l\'interface web PRIXIGRAD.IO')
+  .option('-p, --port <port>', 'Port pour l\'interface web', '3000')
+  .option('-b, --bridge-port <port>', 'Port pour le bridge API', '3001')
+  .option('-d, --dev', 'Mode développement')
+  .action(require('../lib/cli/commands/start'));
+
+// Commande: prixigrad transform <url>
+program
+  .command('transform <github-url>')
+  .description('Transforme une application Firebase en app complète')
+  .option('-t, --token <token>', 'Token GitHub pour repos privés')
+  .option('-o, --output <dir>', 'Répertoire de sortie', './output')
+  .option('-b, --branch <name>', 'Nom de la branche de production', 'prod-auto')
+  .option('--skip-analysis', 'Passer l\'étape d\'analyse interactive')
+  .action(require('../lib/cli/commands/transform'));
+
+// Commande: prixigrad status
+program
+  .command('status')
+  .description('Vérifie le statut du système et des agents MCP')
+  .option('-a, --all', 'Vérification complète de tous les composants')
+  .action(require('../lib/cli/commands/status'));
+
+// Commande: prixigrad config
+program
+  .command('config')
+  .description('Configuration du système')
+  .option('--reset', 'Remet à zéro la configuration')
+  .option('--show', 'Affiche la configuration actuelle')
+  .action(require('../lib/cli/commands/config'));
+
+// Commande: prixigrad logs
+program
+  .command('logs')
+  .description('Affiche les logs des dernières transformations')
+  .option('-n, --lines <number>', 'Nombre de lignes à afficher', '50')
+  .option('-f, --follow', 'Suivi en temps réel')
+  .action(require('../lib/cli/commands/logs'));
+
+// Gestion des erreurs globales
+program.exitOverride();
+
+try {
+  program.parse(process.argv);
+} catch (err) {
+  console.error(`❌ Erreur: ${err.message}`);
+  process.exit(1);
+}
+
+// Si aucune commande n'est fournie, afficher l'aide
+if (!process.argv.slice(2).length) {
+  program.outputHelp();
+}

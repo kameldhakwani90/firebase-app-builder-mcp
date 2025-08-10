@@ -1,0 +1,321 @@
+{
+  "projectName": "Kalliky - Système de Commande Vocale pour Restaurants",
+  "description": "SaaS de commande vocale automatisée avec IA pour restaurants, incluant paiement Stripe Connect, gestion multi-tenant, et traitement vocal intelligent",
+  "githubUrl": "https://github.com/kameldhakwani90/kalliky",
+  "businessContext": "Kalliky est un SaaS B2B qui permet aux restaurants de prendre des commandes par téléphone de manière automatisée grâce à l'IA vocale (Whisper + GPT + TTS). Le système intègre Stripe Connect pour les paiements, Telnyx pour la téléphonie, et propose 3 plans tarifaires (Starter 129€, Pro 329€, Business sur devis).",
+  "technicalArchitecture": {
+    "frontend": "Next.js 14 avec TypeScript, Tailwind CSS, shadcn/ui",
+    "backend": "API Routes Next.js, intégrations externes",
+    "database": "Non définie dans le code actuel",
+    "integrations": ["Stripe Connect", "Telnyx API", "OpenAI Whisper/GPT", "TTS"],
+    "authentication": "Système de connexion simple"
+  },
+  "pages": [
+    {
+      "name": "Landing Page",
+      "route": "/",
+      "pageObjective": "Présenter Kalliky.ai et convertir les visiteurs en clients",
+      "mainFunctionality": "Page marketing avec présentation des fonctionnalités, témoignages, et CTA d'inscription",
+      "businessContext": "Point d'entrée principal pour attirer les restaurants prospects",
+      "hasAuth": false,
+      "usesStaticData": true,
+      "currentMockData": "Contenu marketing statique, témoignages fictifs",
+      "components": [
+        {
+          "name": "Hero Section",
+          "functionality": "Présentation principale avec CTA",
+          "hasInteractivity": true
+        },
+        {
+          "name": "Features Grid",
+          "functionality": "Grille des fonctionnalités clés",
+          "hasInteractivity": false
+        }
+      ]
+    },
+    {
+      "name": "Page Inscription",
+      "route": "/signup",
+      "pageObjective": "Permettre aux restaurants de choisir un plan et créer un compte",
+      "mainFunctionality": "Sélection de plan tarifaire et formulaire d'inscription",
+      "businessContext": "Conversion des prospects en clients payants",
+      "hasAuth": false,
+      "usesStaticData": true,
+      "currentMockData": "Plans tarifaires statiques (Starter, Pro, Business)",
+      "components": [
+        {
+          "name": "Pricing Cards",
+          "functionality": "Affichage des 3 plans avec fonctionnalités",
+          "hasInteractivity": true
+        },
+        {
+          "name": "Signup Form",
+          "functionality": "Formulaire email/mot de passe",
+          "hasInteractivity": true
+        }
+      ]
+    },
+    {
+      "name": "Tableau de Bord Restaurant",
+      "route": "/restaurant/dashboard",
+      "pageObjective": "Vue d'ensemble de l'activité du restaurant",
+      "mainFunctionality": "Dashboard avec métriques, commandes récentes et actions rapides",
+      "businessContext": "Interface principale pour les restaurateurs",
+      "hasAuth": true,
+      "usesStaticData": true,
+      "currentMockData": "Données de commandes fictives, métriques simulées",
+      "components": [
+        {
+          "name": "Metrics Cards",
+          "functionality": "Revenus, commandes, clients du jour",
+          "hasInteractivity": false
+        },
+        {
+          "name": "Recent Orders",
+          "functionality": "Liste des commandes récentes",
+          "hasInteractivity": true
+        },
+        {
+          "name": "Quick Actions",
+          "functionality": "Boutons d'actions rapides",
+          "hasInteractivity": true
+        }
+      ]
+    },
+    {
+      "name": "Gestion Menu",
+      "route": "/restaurant/menu",
+      "pageObjective": "Permettre la gestion du menu restaurant",
+      "mainFunctionality": "Interface de gestion complète du menu avec catégories et produits",
+      "businessContext": "Essentiel pour maintenir le catalogue à jour",
+      "hasAuth": true,
+      "usesStaticData": true,
+      "currentMockData": "Menu fictif avec catégories et produits",
+      "components": [
+        {
+          "name": "Menu Categories",
+          "functionality": "Gestion des catégories de menu",
+          "hasInteractivity": true
+        },
+        {
+          "name": "Product Management",
+          "functionality": "CRUD des produits du menu",
+          "hasInteractivity": true
+        },
+        {
+          "name": "Import Excel",
+          "functionality": "Upload de menu via fichier Excel",
+          "hasInteractivity": true
+        }
+      ]
+    },
+    {
+      "name": "Historique Commandes",
+      "route": "/restaurant/orders",
+      "pageObjective": "Consulter et gérer toutes les commandes",
+      "mainFunctionality": "Liste complète des commandes avec filtres et actions",
+      "businessContext": "Suivi de l'activité commerciale et gestion opérationnelle",
+      "hasAuth": true,
+      "usesStaticData": true,
+      "currentMockData": "Historique de commandes fictives avec différents statuts",
+      "components": [
+        {
+          "name": "Orders Table",
+          "functionality": "Tableau des commandes avec filtres",
+          "hasInteractivity": true
+        },
+        {
+          "name": "Order Details",
+          "functionality": "Vue détaillée d'une commande",
+          "hasInteractivity": true
+        },
+        {
+          "name": "Status Management",
+          "functionality": "Mise à jour du statut des commandes",
+          "hasInteractivity": true
+        }
+      ]
+    },
+    {
+      "name": "Fichier Clients",
+      "route": "/restaurant/clients",
+      "pageObjective": "Gérer la base de données clients",
+      "mainFunctionality": "Interface de gestion des clients avec historique",
+      "businessContext": "Fonctionnalité Pro pour fidélisation et upselling",
+      "hasAuth": true,
+      "usesStaticData": true,
+      "currentMockData": "Base clients fictive avec statuts (Nouveau, Fidèle, VIP)",
+      "components": [
+        {
+          "name": "Customers Table",
+          "functionality": "Liste des clients avec recherche",
+          "hasInteractivity": true
+        },
+        {
+          "name": "Customer Profile",
+          "functionality": "Fiche détaillée client",
+          "hasInteractivity": true
+        },
+        {
+          "name": "AI Memory",
+          "functionality": "Mémoire IA des préférences (Plan Pro)",
+          "hasInteractivity": false
+        }
+      ]
+    },
+    {
+      "name": "Paramètres Restaurant",
+      "route": "/restaurant/settings",
+      "pageObjective": "Configuration du restaurant et intégrations",
+      "mainFunctionality": "Paramètres généraux, intégrations Stripe/Telnyx, configuration IA",
+      "businessContext": "Configuration technique et métier du service",
+      "hasAuth": true,
+      "usesStaticData": true,
+      "currentMockData": "Paramètres fictifs, clés API simulées",
+      "components": [
+        {
+          "name": "Restaurant Profile",
+          "functionality": "Informations du restaurant",
+          "hasInteractivity": true
+        },
+        {
+          "name": "API Integrations",
+          "functionality": "Configuration Stripe/Telnyx",
+          "hasInteractivity": true
+        },
+        {
+          "name": "AI Settings",
+          "functionality": "Paramètres de l'IA vocale",
+          "hasInteractivity": true
+        }
+      ]
+    },
+    {
+      "name": "Facturation & Abonnement",
+      "route": "/restaurant/billing",
+      "pageObjective": "Gestion de l'abonnement et facturation",
+      "mainFunctionality": "Changement de plan, historique factures, moyens de paiement",
+      "businessContext": "Monétisation et gestion des abonnements",
+      "hasAuth": true,
+      "usesStaticData": true,
+      "currentMockData": "Factures fictives, plans tarifaires, carte bancaire simulée",
+      "components": [
+        {
+          "name": "Current Plan",
+          "functionality": "Affichage du plan actuel",
+          "hasInteractivity": false
+        },
+        {
+          "name": "Plan Selector",
+          "functionality": "Changement de plan avec calcul prorata",
+          "hasInteractivity": true
+        },
+        {
+          "name": "Invoices History",
+          "functionality": "Historique des factures PDF",
+          "hasInteractivity": true
+        }
+      ]
+    }
+  ],
+  "userRoles": [
+    {
+      "role": "Restaurant Owner",
+      "permissions": ["dashboard", "menu_management", "orders_view", "clients_management", "settings", "billing"],
+      "description": "Propriétaire du restaurant avec accès complet"
+    },
+    {
+      "role": "Restaurant Manager",
+      "permissions": ["dashboard", "menu_management", "orders_view", "clients_view"],
+      "description": "Manager avec accès limité (pas de facturation/paramètres)"
+    },
+    {
+      "role": "Staff",
+      "permissions": ["orders_view", "menu_view"],
+      "description": "Personnel avec accès consultation uniquement"
+    }
+  ],
+  "coreFeatures": [
+    "Système de commande vocale automatisé avec IA",
+    "Intégration Stripe Connect pour paiements",
+    "API Telnyx pour téléphonie",
+    "Gestion multi-tenant (SaaS)",
+    "Trois plans tarifaires (Starter, Pro, Business)",
+    "Dashboard restaurant complet",
+    "Gestion menu via interface ou Excel",
+    "Fichier clients avec IA (plan Pro)",
+    "Facturation automatique",
+    "Interface responsive moderne"
+  ],
+  "implementationGaps": [
+    {
+      "category": "Backend Infrastructure",
+      "issues": [
+        "Aucune base de données définie",
+        "Pas d'API backend réelle",
+        "Intégrations Stripe/Telnyx non implémentées",
+        "Système d'authentification basique"
+      ],
+      "priority": "critique"
+    },
+    {
+      "category": "AI Integration",
+      "issues": [
+        "Pas d'intégration OpenAI réelle",
+        "Système TTS non implémenté",
+        "Logique de traitement vocal manquante"
+      ],
+      "priority": "critique"
+    },
+    {
+      "category": "Business Logic",
+      "issues": [
+        "Toutes les données sont statiques/fictives",
+        "Pas de logique métier réelle",
+        "Système de facturation simulé",
+        "Multi-tenant non implémenté"
+      ],
+      "priority": "élevée"
+    },
+    {
+      "category": "Production Readiness",
+      "issues": [
+        "Pas de gestion d'erreurs robuste",
+        "Sécurité non implémentée",
+        "Monitoring/logging manquants",
+        "Tests automatisés absents"
+      ],
+      "priority": "élevée"
+    }
+  ],
+  "technicalRecommendations": [
+    {
+      "priority": "1",
+      "action": "Implémenter une base de données (PostgreSQL) avec schema multi-tenant"
+    },
+    {
+      "priority": "2", 
+      "action": "Développer les APIs backend réelles pour toutes les fonctionnalités"
+    },
+    {
+      "priority": "3",
+      "action": "Intégrer les services externes (Stripe Connect, Telnyx, OpenAI)"
+    },
+    {
+      "priority": "4",
+      "action": "Implémenter l'authentification et autorisation robustes"
+    },
+    {
+      "priority": "5",
+      "action": "Développer le système de traitement vocal (Whisper + GPT + TTS)"
+    }
+  ],
+  "businessValue": {
+    "marketFit": "Fort - Automatisation des commandes téléphoniques répond à un vrai besoin",
+    "scalability": "Excellent - Modèle SaaS B2B avec pricing récurrent",
+    "differentiation": "IA vocale spécialisée restaurants + intégration complète paiements"
+  },
+  "analysisDate": "2025-01-07",
+  "analysisVersion": "1.0",
+  "confidence": "élevée"
+}

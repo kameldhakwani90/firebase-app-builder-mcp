@@ -1,0 +1,310 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===== SYSTÈME SAAS MULTI-TENANT =====
+
+// Utilisateur du SaaS (Kamel, sa femme, etc.)
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  name            String
+  company         String?  // Nom de l'entreprise
+  phone           String?  // Téléphone du client  
+  role            Role     @default(CLIENT)
+  
+  // Système de points/crédits
+  credits         Int      @default(0)  // Points disponibles
+  totalCredits    Int      @default(0)  // Total acheté/reçu
+  usedCredits     Int      @default(0)  // Points utilisés
+  
+  // Statut compte
+  isActive        Boolean  @default(true)
+  
+  // Dates
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  lastLoginAt     DateTime?
+  
+  // Relations
+  projects        Project[]
+  creditHistory   CreditHistory[]
+  
+  @@map("users")
+}
+
+enum Role {
+  SUPER_ADMIN
+  CLIENT
+}
+
+// Historique des crédits/points
+model CreditHistory {
+  id          String      @id @default(cuid())
+  userId      String
+  
+  type        CreditType  // PURCHASED, USED, REFUNDED, BONUS
+  amount      Int         // +5 ou -1
+  reason      String?     // "Project analysis", "Purchase 10 credits"
+  
+  projectId   String?     // Si lié à un projet
+  
+  createdAt   DateTime    @default(now())
+  
+  // Relations
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("credit_history")
+}
+
+enum CreditType {
+  PURCHASED
+  USED
+  REFUNDED 
+  BONUS
+}
+
+// Projet analysé
+model Project {
+  id          String   @id @default(cuid())
+  userId      String   // NOUVEAU: Propriétaire du projet
+  name        String
+  description String?  // Description métier du projet
+  githubUrl   String   @unique
+  status      String   // analyzed, analyzing, error
+  type        String?  // saas, e-commerce, blog, etc.
+  framework   String?
+  
+  // Coût en crédits
+  creditsCost Int      @default(1)   // Combien de points ce projet a coûté
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analysis    Analysis?
+  pages       Page[]
+  userRoles   UserRole[]
+  
+  @@map("projects")
+}
+
+// Analyse complète du projet
+model Analysis {
+  id                String   @id @default(cuid())
+  projectId         String   @unique
+  
+  // Business Data
+  businessObjectives String[] // Array of objectives
+  businessType      String?
+  targetMarket      String?
+  revenueStreams    String[]
+  
+  // Analysis metadata  
+  analysisQuality   String?  // PROFESSIONAL_GRADE, etc.
+  analyzedBy        String?  // Claude Code + MCP agents
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  project           Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@map("analyses")
+}
+
+// Page détectée dans le projet
+model Page {
+  id                  String   @id @default(cuid())
+  projectId           String
+  
+  name                String
+  route               String
+  pageObjective       String?
+  mainFunctionality   String?
+  businessContext     String?
+  
+  hasAuth             Boolean  @default(false)
+  usesStaticData      Boolean  @default(true)
+  currentMockData     String?
+  
+  // Nouvelles propriétés pour analyse détaillée
+  crudOperations      String[]  // CREATE, READ, UPDATE, DELETE
+  dataEntities        String[]  // User, Product, Order, etc.
+  corrections         String[]  // Liste des corrections à apporter
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  // Relations
+  project             Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  features            Feature[]
+  apisRequired        ApiRequired[]
+  dbModelsNeeded      DbModelNeeded[]
+  components          Component[]
+  actions             Action[]
+  complexities        Complexity[]
+  backendFunctions    BackendFunction[]
+  
+  @@map("pages")
+}
+
+// Fonctionnalité spécifique d'une page
+model Feature {
+  id                  String   @id @default(cuid())
+  pageId              String
+  
+  feature             String
+  description         String?
+  businessLogic       String?
+  technicalRequirements String[]
+  
+  createdAt           DateTime @default(now())
+  
+  // Relations
+  page                Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  
+  @@map("features")
+}
+
+// API requise pour une page
+model ApiRequired {
+  id          String   @id @default(cuid())
+  pageId      String
+  
+  endpoint    String   // "POST /api/users"
+  description String?
+  purpose     String?
+  
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  page        Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  
+  @@map("apis_required")
+}
+
+// Modèle DB nécessaire pour une page
+model DbModelNeeded {
+  id          String   @id @default(cuid())
+  pageId      String
+  
+  modelName   String   // "User", "Product", etc.
+  fields      Json?    // Array of field definitions
+  
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  page        Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  
+  @@map("db_models_needed")
+}
+
+// Rôles utilisateurs détectés
+model UserRole {
+  id          String   @id @default(cuid())
+  projectId   String
+  
+  role        String   // SUPER_ADMIN, RESTAURANT_OWNER, etc.
+  description String?
+  permissions String[] // Array of permissions
+  
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@map("user_roles")
+}
+
+// Plan de transformation
+model TransformationPlan {
+  id          String   @id @default(cuid())
+  projectId   String   @unique
+  
+  steps       Json     // Array of transformation steps
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("transformation_plans")
+}
+
+// Composants détectés dans une page
+model Component {
+  id              String   @id @default(cuid())
+  pageId          String
+  
+  name            String   // SensorForm, DashboardCard
+  type            String   // form, list, card, modal
+  description     String?
+  functionality   String?
+  userActions     String[] // ['create', 'edit', 'delete']
+  
+  createdAt       DateTime @default(now())
+  
+  // Relations
+  page            Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  
+  @@map("components")
+}
+
+// Actions backend détectées
+model Action {
+  id          String   @id @default(cuid())
+  pageId      String
+  
+  action      String   // Create, Read, Update, Delete
+  description String?
+  apiNeeded   String   // POST /api/sensors
+  dataModel   String   // Sensor, Machine
+  status      String   // missing, exists, broken
+  
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  page        Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  
+  @@map("actions")
+}
+
+// Complexité cachée détectée
+model Complexity {
+  id          String   @id @default(cuid())
+  pageId      String
+  
+  complexity  String   // nom de la complexité
+  description String?
+  impact      String   // impact sur le développement
+  solution    String?  // solution proposée
+  
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  page        Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  
+  @@map("complexities")
+}
+
+// Fonctions backend nécessaires
+model BackendFunction {
+  id          String   @id @default(cuid())
+  pageId      String
+  
+  api         String   // GET /api/sensors
+  status      String   // missing, exists, broken
+  description String?
+  
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  page        Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  
+  @@map("backend_functions")
+}
